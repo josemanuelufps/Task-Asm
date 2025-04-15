@@ -15,4 +15,4 @@ i686-w64-mingw32-gcc -m32 \
     -o build/main.exe \
     -lkernel32         
 
-echo "Build completed: build/taskwarrior.exe"
+echo "Build completed: build/main.exe"
