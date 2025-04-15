@@ -12,7 +12,7 @@ extern  _ExitProcess@4
 global  _start
 
 section .data
-    msg     db "Hello, World!", 0Ah    ; 0Ah is basically "\n" at the end
+    msg     db "ODIO LAS MOTOS, CULPA DE ARQUITECTURA", 0Ah  ; 0Ah is basically \n at the end
     msgLen  equ $ - msg                ; length
 
 section .text
