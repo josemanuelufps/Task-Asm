@@ -1,8 +1,13 @@
 ; utils.asm
 .model small
 
+; === External buffers (these are from main.asm) ===
+extrn idBuffer:byte, descriptionBuffer:byte
+extrn creationBuffer:byte, endBuffer:byte
+
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
+public parse_csv_line
 
 .code
 
@@ -91,6 +96,7 @@ public print_str, print_chr, print_number, print_newline
         call print_chr
         mov dl, 10      ; Line Feed
         call print_chr
+        ret
     print_newline endp
 
     ; ---------------------------------------------------------------------
@@ -104,26 +110,26 @@ public print_str, print_chr, print_number, print_newline
         push bx
         push cx
         push dx
-        
-        ; Check if negative
+
+        ; Handle negative numbers
         test ax, ax
         jns @positive
-        push ax          ; Save number
+        push ax
         mov dl, '-'
         call print_chr
         pop ax
-        neg ax           ; Make positive
-
+        neg ax
+        jz @zero_case  ; Special case for -32768
+        
     @positive:
-        ; Convert to ASCII digits
-        mov cx, 0        ; Digit counter
-        mov bx, 10       ; Divisor
+        ; Convert to string
+        mov cx, 0
+        mov bx, 10
         
     @divide_loop:
         xor dx, dx
-        div bx           ; AX = quotient, DX = remainder
-        add dl, '0'      ; Convert to ASCII
-        push dx          ; Store digit
+        div bx
+        push dx
         inc cx
         test ax, ax
         jnz @divide_loop
@@ -131,9 +137,16 @@ public print_str, print_chr, print_number, print_newline
         ; Print digits
     @print_loop:
         pop dx
+        add dl, '0'
         call print_chr
         loop @print_loop
+        jmp @done
         
+    @zero_case:
+        mov dl, '0'
+        call print_chr
+        
+    @done:
         pop dx
         pop cx
         pop bx
@@ -141,6 +154,115 @@ public print_str, print_chr, print_number, print_newline
         ret
     print_number endp
 
+    
+    ; ---------------------------------------------------------------------
+    ; === CSV Utilities ===
+    ; ---------------------------------------------------------------------
+    ; ==============================================
+    ; Parses a CSV line into separate fields
+    ; Input: DS:SI = pointer to CSV line
+    ;        DI = line index (0-based)
+    ; Output: Fields stored in buffers
+    ; Clobbers: AX, BX, CX, DX, SI, DI
+    ; ==============================================
+    parse_csv_line proc near
+        push bp
+        mov bp, sp
+        push es
+        push di
+        push si
+        
+        ; Set ES = DS for string ops
+        push ds
+        pop es
+        
+        ; Skip lines
+        mov cx, di
+        jcxz @parse_fields
+    @skip_loop:
+        call skip_to_next_line
+        jc @parseerror
+        loop @skip_loop
+        
+    @parse_fields:
+        ; Parse ID (first field)
+        lea di, idBuffer
+        call copy_until_semicolon
+        mov byte ptr [di], '$'
+        
+        ; Parse Description (second field)
+        lea di, descriptionBuffer
+        call copy_until_semicolon
+        mov byte ptr [di], '$'
+        
+        ; Parse Creation Date (third field)
+        lea di, creationBuffer
+        call copy_until_semicolon
+        mov byte ptr [di], '$'
+        
+        ; Parse End Date (fourth field)
+        lea di, endBuffer
+        call copy_until_newline
+        mov byte ptr [di], '$'
+        
+        clc
+        jmp @filedone
+        
+    @parseerror:
+        stc
+        
+    @filedone:
+        pop si
+        pop di
+        pop es
+        pop bp
+        ret
+
+    ; Helper: Copies until semicolon (exclusive)
+    copy_until_semicolon:
+        lodsb
+        cmp al, ';'
+        je @done_copy
+        cmp al, 13      ; CR
+        je @unexpected_end
+        cmp al, 0       ; EOF
+        je @unexpected_end
+        stosb
+        jmp copy_until_semicolon
+    @done_copy:
+        ret
+    @unexpected_end:
+        dec si
+        stc
+        ret
+
+    ; Helper: Copies until newline (exclusive) 
+    copy_until_newline:
+        lodsb
+        cmp al, 13      ; CR
+        je @done_newline
+        cmp al, 10      ; LF
+        je @done_newline
+        cmp al, 0       ; EOF
+        je @done_newline
+        stosb
+        jmp copy_until_newline
+    @done_newline:
+        ret
+
+    ; Helper: Skips to next line
+    skip_to_next_line:
+        lodsb
+        cmp al, 10      ; LF
+        je @done_skip
+        cmp al, 0       ; EOF
+        jne skip_to_next_line
+        stc
+        ret
+    @done_skip:
+        clc
+        ret
+    parse_csv_line endp
 
 end ; end of code
 
