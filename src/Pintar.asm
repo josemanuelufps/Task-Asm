@@ -2,7 +2,7 @@
 .stack 100h
 
 .data
-    color db 04h  ; Fondo azul (1), texto amarillo (E)
+    color db 0Fh  ; Fondo azul (1), texto amarillo (E)
     mensaje1 db 'TUDU - TASK PROJECT$'
     mensaje2 db 'DONE BY$'
     integrante1 db 'Andres Felipe Monsalve Perez - 1152353$'
@@ -13,7 +13,7 @@
     agregar db 'a - Agregar$'
     listar db 'l - Listar$'
     eliminar db 'e - Eliminar$'
-    letra db '0'    
+    letra db ''    
 
 .code
 main proc
@@ -3024,7 +3024,62 @@ main proc
     lea dx, indicacion    ; Dirección de la cadena de texto
     int 21h
 
-    ;Salir a DOS
+    ;================================================================================================
+    ;================================================================================================
+
+    ;Escoger opcion
+    Opcion:
+    mov ah, 02h            ; Función para mover el cursor
+    mov bh, 0              ; Página de video (cero es la principal)
+    mov dh, 23           ; Número de fila (0-24, con 0 en la parte superior)
+    mov dl, 51       ; Número de columna (0-79, con 0 en la parte izquierda)
+    int 10h
+
+    mov ah, 08H        ; Función 1: leer carácter con eco
+    int 21h          ; Resultado en AL
+    mov letra, al     ; Guardar el carácter en variable 
+
+    cmp letra, 'a'
+    je OpcionAgregar
+
+    cmp letra, 'e'
+    je OpcionEliminar
+
+    cmp letra, 'l'
+    je OpcionListar
+
+    cmp letra, 'q'
+    jne Opcion
+
+    jmp Finalizar
+
+    :OpcionAgregar
+    ;Llamar a la función para agregar
+    jmp Opcion
+
+    :OpcionEliminar
+    ;Llamar a la función para eliminar
+    jmp Opcion
+
+    :OpcionListar
+    ;Llamar a la función para listar
+    jmp Opcion
+    
+    Finalizar:
+    ; Apuntar ES a memoria de video
+    mov ax, 0B800h
+    mov es, ax
+    
+    ; Configurar para llenar pantalla
+    xor di, di  ; Empezar en posición 0
+    mov cx, 80*25   ; Número de caracteres en pantalla
+    mov ah, [color] ; Atributo de colore
+    mov al, ' ' ; Carácter espacio (para limpiar)
+    
+    ; Llenar pantalla
+    rep stosw   ; Almacenar AX (AH=color, AL=carácter) en ES:DI
+
+
     mov ax, 4C00h
     int 21h
 main endp
