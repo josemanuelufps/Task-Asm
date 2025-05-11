@@ -13,7 +13,7 @@
     agregar db 'a - Agregar$'
     listar db 'l - Listar$'
     eliminar db 'e - Eliminar$'
-    letra db ''    
+    letra db ' '    
 
 .code
 main proc
@@ -3053,15 +3053,15 @@ main proc
 
     jmp Finalizar
 
-    :OpcionAgregar
+    OpcionAgregar:
     ;Llamar a la función para agregar
     jmp Opcion
 
-    :OpcionEliminar
+    OpcionEliminar:
     ;Llamar a la función para eliminar
     jmp Opcion
 
-    :OpcionListar
+    OpcionListar:
     ;Llamar a la función para listar
     jmp Opcion
     
