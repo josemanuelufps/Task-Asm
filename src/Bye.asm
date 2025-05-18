@@ -1,8 +1,9 @@
 .model small
 .stack
+.386
 
 .data
-    color db 03h
+    colorBye db 03h
 
     msg_thanks1 db ' _______ _                 _        ','$'
     msg_thanks2 db '|__   __| |               | |       ','$'
@@ -39,7 +40,7 @@
     final_msg5 db '************************************','$'       
 
 .code
-main:
+mainBye proc near
     mov ax, @data
     mov ds, ax
 
@@ -50,7 +51,7 @@ main:
     ; Configurar para llenar pantalla
     xor di, di  ; Empezar en posición 0
     mov cx, 80*25   ; Número de caracteres en pantalla
-    mov ah, [color] ; Atributo de colore
+    mov ah, [colorBye] ; Atributo de colore
     mov al, ' ' ; Carácter espacio (para limpiar)
 
     rep stosw
@@ -358,5 +359,5 @@ main:
     ; Finalizar programa
     mov ax, 4C00h
     int 21h
-
-end main
+mainBye endp
+end mainBye

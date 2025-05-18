@@ -15,7 +15,7 @@ extrn creationBuffer:byte, endBuffer:byte, fileBuffer:byte
 
 ;DATOS DE LISTAR.ASM (ORIGINALMENTE)
 extern colorListar:byte, separador:byte, encabezado:byte, espacioTarea:byte
-extern pos_vertical:byte, cantTareas:byte, letra:byte, controles:byte
+extern pos_vertical:byte, cantTareas:byte, letra_Listar:byte, controles:byte
 extern acumuladorLineas:byte, max_lines:byte
 
 public mainListar
@@ -27,7 +27,7 @@ public mainListar
     ;espacioTarea db'|    |                             |            |            |                |',13,10,'$'
     ;pos_vertical db 3
     ;cantTareas db 10d   
-    ;letra db ' '
+    ;letra_Listar db ' '
     ;controles db '[U]Siguiente..  [D]Anterior..  [Q]Salir$'
     ;acumuladorLineas db 1d
     ;max_lines db 0
@@ -154,15 +154,15 @@ mainListar proc near
     
     mov ah, 08H        ; Función 1: leer carácter con eco
     int 21h          ; Resultado en AL
-    mov letra, al     ; Guardar el carácter en variable 
+    mov letra_Listar, al     ; Guardar el carácter en variable 
 
-    cmp letra, 'u'
+    cmp letra_Listar, 'u'
     je Next
 
-    cmp letra, 'd'
+    cmp letra_Listar, 'd'
     je Down
     
-    cmp letra, 'q'
+    cmp letra_Listar, 'q'
     je salir ; Si no es 'q', continuar
 
     jmp finalizar ; Si no es 'u' o 'd', volver a leer
