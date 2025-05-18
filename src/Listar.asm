@@ -2,32 +2,38 @@
 .stack
 .386
 
+; ----------------------------------------------------
+; === External procedures (from utils.asm) ===
+; ----------------------------------------------------
+extern parse_csv_line:near
+
+; ----------------------------------------------------
+; === External data (from main.asm) ===
+; ----------------------------------------------------
 extrn idBuffer:byte, descriptionBuffer:byte
-extrn creationBuffer:byte, endBuffer:byte
+extrn creationBuffer:byte, endBuffer:byte, fileBuffer:byte 
 
-extern pos_vertical:byte, separador:byte, encabezado:byte, espacioTarea:byte
-extern cantTareas:byte, color:byte, letra:byte, controles:byte
-extern acumuladorLineas:byte
-extern parse_csv_line:near, fileBuffer:byte, max_lines:byte
+;DATOS DE LISTAR.ASM (ORIGINALMENTE)
+extern colorListar:byte, separador:byte, encabezado:byte, espacioTarea:byte
+extern pos_vertical:byte, cantTareas:byte, letra:byte, controles:byte
+extern acumuladorLineas:byte, max_lines:byte
 
-public mainlistar
+public mainListar
 
 .data
-    ;pos_vertical db 3
-    ;pos_vertical_decorador db 9
+    ;colorListar db 03h
     ;separador   db '+----+-----------------------------+------------+------------+----------------+',13,10,'$'
     ;encabezado db '| ID | Descripcion                 | Creacion   | Limite     | Dias restantes |',13,10,'$'
     ;espacioTarea db'|    |                             |            |            |                |',13,10,'$'
-    ;cantTareas db 10d
-    ;color db 03h
+    ;pos_vertical db 3
+    ;cantTareas db 10d   
     ;letra db ' '
-    ;controles db '[N]Siguiente..  [Q]Salir$'
+    ;controles db '[U]Siguiente..  [D]Anterior..  [Q]Salir$'
+    ;acumuladorLineas db 1d
+    ;max_lines db 0
 
 .code
-mainlistar proc near
-    ;mov ax, @data
-    ;mov ds, ax
-
+mainListar proc near
     ; Apuntar ES a memoria de video
     Inicio:
     mov ax, 0B800h
@@ -36,7 +42,7 @@ mainlistar proc near
     ; Configurar para llenar pantalla
     xor di, di  ; Empezar en posición 0
     mov cx, 80*25   ; Número de caracteres en pantalla
-    mov ah, [color] ; Atributo de colore
+    mov ah, [colorListar] ; Atributo de colore
     mov al, ' ' ; Carácter espacio (para limpiar)
 
     rep stosw
@@ -79,7 +85,6 @@ mainlistar proc near
 
     mov cl, [acumuladorLineas]
     mov ch, 0
-    ;mov cx, 1
 
     ;RELLENAR TABLA
     Rellenar:
@@ -139,7 +144,6 @@ mainlistar proc near
     jne Rellenar
 
     mov [acumuladorLineas], cl
-    ;add [acumuladorLineas], 1
 
     finalizar:
     mov ah, 02h
@@ -152,7 +156,7 @@ mainlistar proc near
     int 21h          ; Resultado en AL
     mov letra, al     ; Guardar el carácter en variable 
 
-    cmp letra, 'n'
+    cmp letra, 'u'
     je Next
 
     cmp letra, 'd'
@@ -181,17 +185,6 @@ mainlistar proc near
     Salir:
     mov ah, 4Ch
     int 21h
-mainlistar endp
 
-saltarLinea proc near
-    mov dl, 13         ; Carriage return (CR)
-    mov ah, 02h
-    int 21h
-
-    mov dl, 10         ; Line feed (LF)
-    mov ah, 02h
-    int 21h
-
-    ret
-saltarLinea endp
+mainListar endp
 end mainlistar
