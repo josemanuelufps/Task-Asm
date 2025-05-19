@@ -5,7 +5,7 @@
 ; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
-extern parse_csv_line:near
+extern parse_csv_line:near, count_lines:near
 
 ; ----------------------------------------------------
 ; === External data (from main.asm) ===
@@ -36,6 +36,7 @@ public mainListar
 mainListar proc near
     ; Apuntar ES a memoria de video
     Inicio:
+    call count_lines
     mov ax, 0B800h
     mov es, ax
     
@@ -183,8 +184,9 @@ mainListar proc near
     jmp Inicio
 
     Salir:
-    mov ah, 4Ch
-    int 21h
+    mov [pos_vertical], 3
+    mov [acumuladorLineas], 1d
+    ret
 
 mainListar endp
 end mainlistar

@@ -9,7 +9,10 @@
 
 ; Masm.exe main.asm ; 
 ; Masm.exe utils.asm ;
-; Link.exe main.obj utils.obj ;
+; Masm.exe listar.asm ;
+; Masm.exe welcome.asm ;
+; Masm.exe bye.asm ;
+; Link.exe main.obj welcome.obj bye.obj listar.obj utils.obj ;
 ; main.exe
 
 ; Keep an eye that the "text.txt" file must be in the same directory as the executable.
@@ -23,12 +26,49 @@
 ; ----------------------------------------------------
 extrn open_file:near, close_file:near, read_file:near
 extrn print_str:near, print_chr:near, print_number:near, print_newline:near
-extrn parse_csv_line:near
+extrn parse_csv_line:near, count_lines:near
+
+; ----------------------------------------------------
+; === External procedures (from Welcome.asm) ===
+; ----------------------------------------------------
+extern mainWelcome:near
+
+; ----------------------------------------------------
+; === Public data (from main.asm) ===
+; ----------------------------------------------------
+public idBuffer, descriptionBuffer, creationBuffer, endBuffer, fileBuffer
+
+; ----------------------------------------------------
+; === Public data to Listar.asm (from main.asm) ===
+; ----------------------------------------------------
+public colorListar, separador, encabezado, espacioTarea
+public pos_vertical, cantTareas, letra_Listar, controles
+public acumuladorLineas, max_lines
+
+; ----------------------------------------------------
+; === Public data to Welcome.asm (from main.asm) ===
+; ----------------------------------------------------
+public colorWelcome, mensajeProyecto, mensajeDone
+public integrante1, integrante2, metodos
+public indicacion, salir, agregar
+public listar, eliminar, letra_Welcome
+
+; ----------------------------------------------------
+; === Public data to Bye.asm (from main.asm) ===
+; ----------------------------------------------------
+public colorBye, msg_thanks1, msg_thanks2
+public msg_thanks3, msg_thanks4, msg_thanks5, msg_thanks6
+public msg_for1, msg_for2, msg_for3, msg_for4
+public msg_for5, msg_for6, msg_using1, msg_using2
+public msg_using3, msg_using4, msg_using5, msg_using6
+public msg_using7, msg_using8, msg_me1, msg_me2
+public msg_me3, msg_me4, final_msg1, final_msg2
+public final_msg3, final_msg4, final_msg5
+
 
 ; ----------------------------------------------------
 ; === Data segment ===
 ; ----------------------------------------------------
-public idBuffer, descriptionBuffer, creationBuffer, endBuffer
 .data
     ;
     filename    db 'text.txt', 0
@@ -46,6 +86,64 @@ public idBuffer, descriptionBuffer, creationBuffer, endBuffer
     ; Temporary line buffer
     lineBuffer  db 256 dup('$')            ; For reading one CSV line
     currentLine dw 0                     ; Track which line we're processing
+
+    ;DATOS DE LISTAR.ASM   
+    colorListar db 03h
+    separador   db '+----+-----------------------------+------------+------------+----------------+',13,10,'$'
+    encabezado db '| ID | Descripcion                 | Creacion   | Limite     | Dias restantes |',13,10,'$'
+    espacioTarea db'|    |                             |            |            |                |',13,10,'$'
+    pos_vertical db 3
+    cantTareas db 10d
+    letra_Listar db ' '
+    controles db '[U]Siguiente..  [D]Anterior..  [Q]Salir$'
+    acumuladorLineas db 1d
+    max_lines db 0
+
+    ;DATOS DE WELCOME.ASM
+    colorWelcome db 0Fh  ; Fondo negro (0), texto blanco (F)
+    mensajeProyecto db 'TUDU - TASK PROJECT$'
+    mensajeDone db 'DONE BY$'
+    integrante1 db 'Andres Felipe Monsalve Perez - 1152353$'
+    integrante2 db 'Jose Manuel Perez Rodriguez - 1152375$'
+    metodos db 'El programa contiene los siguientes metodos: $'
+    indicacion db 'Presione la tecla correspondiente para continuar...$'
+    salir db 'q - Salir$'
+    agregar db 'a - Agregar$'
+    listar db 'l - Listar$'
+    eliminar db 'e - Eliminar$'
+    letra_Welcome db ' '
+
+    ;DATOS DE BYE.ASM
+    colorBye db 03h
+    msg_thanks1 db ' _______ _                 _        ','$'
+    msg_thanks2 db '|__   __| |               | |       ','$'
+    msg_thanks3 db '   | |  | |__   __ _ _ __ | | _____ ','$'
+    msg_thanks4 db '   | |  |  _ \ / _` |  _ \| |/ / __|','$'
+    msg_thanks5 db '   | |  | | | | (_| | | | |   <\__ \','$'
+    msg_thanks6 db '   |_|  |_| |_|\__,_|_| |_|_|\_\___/','$'
+    msg_for1 db '  __           ','$'
+    msg_for2 db ' / _|          ','$'
+    msg_for3 db '| |_ ___  _ __ ','$'
+    msg_for4 db '|  _/ _ \|  __|','$'
+    msg_for5 db '| || (_) | |   ','$'
+    msg_for6 db '|_| \___/|_|   ','$'
+    msg_using1   db '           _             ','$'
+    msg_using2   db '          (_)            ','$'
+    msg_using3   db ' _   _ ___ _ _ __   __ _ ','$'
+    msg_using4   db '| | | / __| |  _ \ / _` |','$'
+    msg_using5   db '| |_| \__ \ | | | | (_| |','$'
+    msg_using6   db ' \__,_|___/_|_| |_|\__, |','$'
+    msg_using7   db '                    __/ |','$'
+    msg_using8   db '                   |___/ ','$'
+    msg_me1  db ' _ __ ___   ___ ','$'
+    msg_me2  db '|  _   _ \ / _ \','$'
+    msg_me3  db '| | | | | |  __/','$'
+    msg_me4  db '|_| |_| |_|\___|','$'
+    final_msg1 db '************************************','$'
+    final_msg2 db '*                                  *','$' 
+    final_msg3 db '*  We would like to get your vote  *','$'
+    final_msg4 db '*                                  *','$'  
+    final_msg5 db '************************************','$'  
 
 ; ----------------------------------------------------
 ; === Code segment and main program ===
@@ -82,34 +180,7 @@ public idBuffer, descriptionBuffer, creationBuffer, endBuffer
         call close_file
         jc @error
 
-        ; ----------------------------------------------------
-        ; 4. Print success message + file content
-        lea dx, success_msg
-        call print_str
-
-        lea dx, fileBuffer
-        call print_str
-        call print_newline
-
-        ; ----------------------------------------------------
-        ; 5. Also, let's print the numbers from 10 to -2 cuz why not
-        mov cx, 10       ; Start value (instead of counter)
-    @print_numbers:
-        mov ax, cx      ; Current number to print
-        call print_number
-        
-        ; Print space between numbers
-        mov dl, ' '
-        call print_chr
-        
-        dec cx           ; Move to next number
-        cmp cx, -3       ; We want to stop after -2
-        jg @print_numbers ; Jump if greater than -3 (stops after -2)
-        
-        ; Print newline after all numbers
-        call print_newline
-
-        ; ----------------------------------------------------
+    ; ----------------------------------------------------
         ; 6. Test CSV parsing
         ; Parse line 2 (third line, first data record)
         mov si, offset fileBuffer   ; Pointer to loaded CSV data
@@ -117,44 +188,7 @@ public idBuffer, descriptionBuffer, creationBuffer, endBuffer
         call parse_csv_line
         jc @error               ; Handle parsing errors
 
-        ; Print parsed fields
-        lea dx, idBuffer
-        call print_str
-        call print_newline
-
-        lea dx, descriptionBuffer
-        call print_str
-        call print_newline
-
-        lea dx, creationBuffer
-        call print_str
-        call print_newline
-
-        lea dx, endBuffer
-        call print_str
-        call print_newline
-
-        mov si, offset fileBuffer   ; Pointer to loaded CSV data
-        mov di, 6               ; Line index (0=header, 1=first data)
-        call parse_csv_line
-        jc @error               ; Handle parsing errors
-
-        ; Print parsed fields
-        lea dx, idBuffer
-        call print_str
-        call print_newline
-
-        lea dx, descriptionBuffer
-        call print_str
-        call print_newline
-
-        lea dx, creationBuffer
-        call print_str
-        call print_newline
-
-        lea dx, endBuffer
-        call print_str
-
+        call mainWelcome
 
         jmp @finish_program
 

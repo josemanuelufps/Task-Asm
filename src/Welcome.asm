@@ -2,26 +2,48 @@
 .stack 100h
 .386
 
+public mainWelcome
+
+; ----------------------------------------------------
+; === External procedures (from Listar.asm) ===
+; ----------------------------------------------------
+extern mainListar:near
+
+; ----------------------------------------------------
+; === External procedures (from Bye.asm) ===
+; ----------------------------------------------------
+extern mainBye:near
+
+; ----------------------------------------------------
+; === External data (from main.asm) ===
+; ----------------------------------------------------
+;DATOS DE WELCOME.ASM (ORIGINALMENTE)
+extrn colorWelcome:byte, mensajeProyecto:byte, mensajeDone:byte
+extrn integrante1:byte, integrante2:byte, metodos:byte
+extrn indicacion:byte, salir:byte, agregar:byte
+extrn listar:byte, eliminar:byte, letra_Welcome:byte
+
 .data
-    colorWelcome db 0Fh  ; Fondo negro (0), texto blanco (F)
-    mensajeProyecto db 'TUDU - TASK PROJECT$'
-    mensajeDone db 'DONE BY$'
-    integrante1 db 'Andres Felipe Monsalve Perez - 1152353$'
-    integrante2 db 'Jose Manuel Perez Rodriguez - 1152375$'
-    metodos db 'El programa contiene los siguientes metodos: $'
-    indicacion db 'Presione la tecla correspondiente para continuar...$'
-    salir db 'q - Salir$'
-    agregar db 'a - Agregar$'
-    listar db 'l - Listar$'
-    eliminar db 'e - Eliminar$'
-    letra_Welcome db ' '    
+    ;colorWelcome db 0Fh  ; Fondo negro (0), texto blanco (F)
+    ;mensajeProyecto db 'TUDU - TASK PROJECT$'
+    ;mensajeDone db 'DONE BY$'
+    ;integrante1 db 'Andres Felipe Monsalve Perez - 1152353$'
+    ;integrante2 db 'Jose Manuel Perez Rodriguez - 1152375$'
+    ;metodos db 'El programa contiene los siguientes metodos: $'
+    ;indicacion db 'Presione la tecla correspondiente para continuar...$'
+    ;salir db 'q - Salir$'
+    ;agregar db 'a - Agregar$'
+    ;listar db 'l - Listar$'
+    ;eliminar db 'e - Eliminar$'
+    ;letra_Welcome db ' '    
 
 .code
 mainWelcome proc near
-    mov ax, @data
-    mov ds, ax
+    ;mov ax, @data
+    ;mov ds, ax
     
     ; Apuntar ES a memoria de video
+    Inicio:
     mov ax, 0B800h
     mov es, ax
     
@@ -3063,25 +3085,11 @@ mainWelcome proc near
     jmp Opcion
 
     OpcionListar:
-    ;Llamar a la función para listar
-    jmp Opcion
+    call mainListar
+    jmp Inicio
     
     Finalizar:
-    ; Apuntar ES a memoria de video
-    mov ax, 0B800h
-    mov es, ax
-    
-    ; Configurar para llenar pantalla
-    xor di, di  ; Empezar en posición 0
-    mov cx, 80*25   ; Número de caracteres en pantalla
-    mov ah, [colorWelcome] ; Atributo de colore
-    mov al, ' ' ; Carácter espacio (para limpiar)
-    
-    ; Llenar pantalla
-    rep stosw   ; Almacenar AX (AH=color, AL=carácter) en ES:DI
-
-
-    mov ax, 4C00h
-    int 21h
+    call mainBye
+    ret
 mainWelcome endp
 end mainWelcome

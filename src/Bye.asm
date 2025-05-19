@@ -2,48 +2,55 @@
 .stack
 .386
 
+; ----------------------------------------------------
+; === External data (from main.asm) ===
+; ----------------------------------------------------
+;DATOS DE BYE.ASM (ORIGINALMENTE)
+extern colorBye:byte, msg_thanks1:byte, msg_thanks2:byte
+extern msg_thanks3:byte, msg_thanks4:byte, msg_thanks5:byte, msg_thanks6:byte
+extern msg_for1:byte, msg_for2:byte, msg_for3:byte, msg_for4:byte
+extern msg_for5:byte, msg_for6:byte, msg_using1:byte, msg_using2:byte
+extern msg_using3:byte, msg_using4:byte, msg_using5:byte, msg_using6:byte
+extern msg_using7:byte, msg_using8:byte, msg_me1:byte, msg_me2:byte
+extern msg_me3:byte, msg_me4:byte, final_msg1:byte, final_msg2:byte
+extern final_msg3:byte, final_msg4:byte, final_msg5:byte
+
+public mainBye
+
 .data
-    colorBye db 03h
-
-    msg_thanks1 db ' _______ _                 _        ','$'
-    msg_thanks2 db '|__   __| |               | |       ','$'
-    msg_thanks3 db '   | |  | |__   __ _ _ __ | | _____ ','$'
-    msg_thanks4 db '   | |  |  _ \ / _` |  _ \| |/ / __|','$'
-    msg_thanks5 db '   | |  | | | | (_| | | | |   <\__ \','$'
-    msg_thanks6 db '   |_|  |_| |_|\__,_|_| |_|_|\_\___/','$'
-
-    msg_for1 db '  __           ','$'
-    msg_for2 db ' / _|          ','$'
-    msg_for3 db '| |_ ___  _ __ ','$'
-    msg_for4 db '|  _/ _ \|  __|','$'
-    msg_for5 db '| || (_) | |   ','$'
-    msg_for6 db '|_| \___/|_|   ','$'
-    
-    msg_using1   db '           _             ','$'
-    msg_using2   db '          (_)            ','$'
-    msg_using3   db ' _   _ ___ _ _ __   __ _ ','$'
-    msg_using4   db '| | | / __| |  _ \ / _` |','$'
-    msg_using5   db '| |_| \__ \ | | | | (_| |','$'
-    msg_using6   db ' \__,_|___/_|_| |_|\__, |','$'
-    msg_using7   db '                    __/ |','$'
-    msg_using8   db '                   |___/ ','$'
-
-    msg_me1  db ' _ __ ___   ___ ','$'
-    msg_me2  db '|  _   _ \ / _ \','$'
-    msg_me3  db '| | | | | |  __/','$'
-    msg_me4  db '|_| |_| |_|\___|','$'
-
-    final_msg1 db '************************************','$'
-    final_msg2 db '*                                  *','$' 
-    final_msg3 db '*  We would like to get your vote  *','$'
-    final_msg4 db '*                                  *','$'  
-    final_msg5 db '************************************','$'       
+    ;colorBye db 03h
+    ;msg_thanks1 db ' _______ _                 _        ','$'
+    ;msg_thanks2 db '|__   __| |               | |       ','$'
+    ;msg_thanks3 db '   | |  | |__   __ _ _ __ | | _____ ','$'
+    ;msg_thanks4 db '   | |  |  _ \ / _` |  _ \| |/ / __|','$'
+    ;msg_thanks5 db '   | |  | | | | (_| | | | |   <\__ \','$'
+    ;msg_thanks6 db '   |_|  |_| |_|\__,_|_| |_|_|\_\___/','$'
+    ;msg_for1 db '  __           ','$'
+    ;msg_for2 db ' / _|          ','$'
+    ;msg_for3 db '| |_ ___  _ __ ','$'
+    ;msg_for4 db '|  _/ _ \|  __|','$'
+    ;msg_for5 db '| || (_) | |   ','$'
+    ;msg_for6 db '|_| \___/|_|   ','$'
+    ;msg_using1   db '           _             ','$'
+    ;msg_using2   db '          (_)            ','$'
+    ;msg_using3   db ' _   _ ___ _ _ __   __ _ ','$'
+    ;msg_using4   db '| | | / __| |  _ \ / _` |','$'
+    ;msg_using5   db '| |_| \__ \ | | | | (_| |','$'
+    ;msg_using6   db ' \__,_|___/_|_| |_|\__, |','$'
+    ;msg_using7   db '                    __/ |','$'
+    ;msg_using8   db '                   |___/ ','$'
+    ;msg_me1  db ' _ __ ___   ___ ','$'
+    ;msg_me2  db '|  _   _ \ / _ \','$'
+    ;msg_me3  db '| | | | | |  __/','$'
+    ;msg_me4  db '|_| |_| |_|\___|','$'
+    ;final_msg1 db '************************************','$'
+    ;final_msg2 db '*                                  *','$' 
+    ;final_msg3 db '*  We would like to get your vote  *','$'
+    ;final_msg4 db '*                                  *','$'  
+    ;final_msg5 db '************************************','$'       
 
 .code
 mainBye proc near
-    mov ax, @data
-    mov ds, ax
-
     ; Apuntar ES a memoria de video
     mov ax, 0B800h
     mov es, ax
@@ -357,7 +364,6 @@ mainBye proc near
     int 21h
 
     ; Finalizar programa
-    mov ax, 4C00h
-    int 21h
+    ret
 mainBye endp
 end mainBye
