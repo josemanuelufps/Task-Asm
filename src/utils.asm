@@ -3,11 +3,11 @@
 
 ; === External buffers (these are from main.asm) ===
 extrn idBuffer:byte, descriptionBuffer:byte
-extrn creationBuffer:byte, endBuffer:byte
+extrn creationBuffer:byte, endBuffer:byte, max_lines:byte
 
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
-public parse_csv_line
+public parse_csv_line, count_lines
 
 .code
 
@@ -263,6 +263,46 @@ public parse_csv_line
         clc
         ret
     parse_csv_line endp
+
+; ==============================================
+    ; Counts how many items are in the CSV and saves
+    ; the result inside the max_lines buffer.
+    ; Input: DS:SI = pointer to CSV line
+    ; Output: amount of items stored in buffer
+    ; Clobbers:
+    ; ==============================================
+    count_lines proc near
+    push si
+    xor cx, cx          ; Contador de líneas = 0
+    mov bx, 0           ; Flag para saltar header (0 = saltar, 1 = contar)
+
+@skip_header:
+    mov al, [si]
+    inc si
+    cmp al, 10          ; ¿Encontró LF (fin de header)?
+    je @start_counting
+    cmp al, 0           ; ¿Fin de archivo inesperado?
+    je @end_count
+    jmp @skip_header
+
+@start_counting:
+    mov bx, 1           ; Marcar que header ya se saltó
+
+@count_loop:
+    mov al, [si]
+    inc si
+    cmp al, 0           ; ¿Fin de archivo?
+    je @end_count
+    cmp al, 10          ; ¿Es LF (salto de línea)?
+    jne @count_loop
+    inc cx              ; Incrementar contador de líneas de datos
+    jmp @count_loop
+
+@end_count:
+    mov [max_lines], cl ; Guardar total de líneas (sin header)
+    pop si
+    ret
+count_lines endp
 
 end ; end of code
 
