@@ -325,6 +325,7 @@ public format_date_creation
         push cx
         push dx
 
+        lea si, fileBuffer
         ; Inicializamos registros
         mov bx, 0             ; Contador de líneas
         ; cx = linea buscada

@@ -38,7 +38,9 @@ extern mainWelcome:near
 ; ----------------------------------------------------
 ; === Public data (from main.asm) ===
 ; ----------------------------------------------------
-public idBuffer, descriptionBuffer, creationBuffer, endBuffer, fileBuffer
+public idBuffer, descriptionBuffer, creationBuffer, endBuffer
+public filename, filehandle, copy_buffer, fileBuffer
+public tempBufferAnio, tempBufferMonth, tempBufferday
 
 ; ----------------------------------------------------
 ; === Public data to Listar.asm (from main.asm) ===
@@ -93,9 +95,13 @@ public final_msg3, final_msg4, final_msg5
     ;
     filename    db 'text.txt', 0
     filehandle  dw ?
-    fileBuffer      db 4096 dup('$')  ; Read buffer
+    fileBuffer      db 8192 dup('$')  ; Read buffer
+    copy_buffer      db 8192 dup('$')  ; Read buffer
     success_msg db 'File contents:', 13, 10, '$' ; the 13 and 10 are carriage and line feed
     error_msg   db 'Error!', 13, 10, '$'
+    tempBufferAnio db '0000$'
+    tempBufferMonth db '00$'
+    tempBufferday db '00$'
 
     ; CSV buffers
     idBuffer          db 4 dup('$')        ; 3 digits + null terminator

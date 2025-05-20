@@ -5,9 +5,14 @@
 public mainEliminar
 
 ; ----------------------------------------------------
+; === External procedures (from Bye.asm) ===
+; ----------------------------------------------------
+extrn main:near
+
+; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
-extern count_lines:near
+extern count_lines:near, remove_csv_line:near
 
 ; ----------------------------------------------------
 ; === External data (from main.asm) ===
@@ -210,11 +215,14 @@ mainEliminar proc near
     jne Letra_Vacio
 
     Cancelar:
-    ret
+    call main
 
     Salir:
-    ;call borrar de utils
-    ret
+    mov cl, OpcionID
+    mov ch, 0
+    call remove_csv_line
+    call main
+    call main
     mainEliminar endp
 
 ; ------------------------------------------------------------
