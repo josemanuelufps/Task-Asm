@@ -37,8 +37,8 @@ mainListar proc near
     ; Apuntar ES a memoria de video
     Inicio:
     call count_lines
-    mov ax, 0B800h
-    mov es, ax
+    ;mov ax, 0B800h
+    ;mov es, ax
     
     ; Configurar para llenar pantalla
     xor di, di  ; Empezar en posición 0
@@ -172,7 +172,7 @@ mainListar proc near
     mov [pos_vertical], 3
     mov al, [acumuladorLineas]
     cmp al, [max_lines]
-    jge finalizar
+    jge finalizar;Arreglar comparacion y salto
 
     jmp Inicio
 

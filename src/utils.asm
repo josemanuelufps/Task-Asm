@@ -469,6 +469,7 @@ public format_date_creation
         pop cx
         pop bx
         pop ax
+
         ret
 
     @line_not_found:
@@ -527,25 +528,6 @@ public format_date_creation
         jc @error
 
         ; close file
-        mov ah, 3Eh
-        mov bx, [filehandle]
-        int 21h
-
-        ; Reopen file for reading
-        mov ah, 3Dh       
-        mov al, 0           
-        lea dx, filename
-        int 21h
-        jc @error
-        mov [filehandle], ax
-
-        ; Read contents into fileBuffer
-        mov bx, [filehandle]
-        mov cx, 8191                  
-        lea dx, fileBuffer
-        call read_file                
-
-        ; close again
         mov ah, 3Eh
         mov bx, [filehandle]
         int 21h

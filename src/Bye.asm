@@ -52,8 +52,8 @@ public mainBye
 .code
 mainBye proc near
     ; Apuntar ES a memoria de video
-    mov ax, 0B800h
-    mov es, ax
+    ;mov ax, 0B800h
+    ;mov es, ax
     
     ; Configurar para llenar pantalla
     xor di, di  ; Empezar en posición 0

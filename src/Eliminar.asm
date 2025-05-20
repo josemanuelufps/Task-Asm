@@ -48,11 +48,11 @@ extrn OpcionIDStr:byte
 mainEliminar proc near
 
     call count_lines
-    mov ax, @data
-    mov ds, ax
+    ;mov ax, @data
+    ;mov ds, ax
 
-    mov ax, 0B800h
-    mov es, ax
+    ;mov ax, 0B800h
+    ;mov es, ax
     
     ; Limpiar pantalla
     xor di, di
@@ -215,13 +215,14 @@ mainEliminar proc near
     jne Letra_Vacio
 
     Cancelar:
+    mov OpcionID, 1d
     call main
 
     Salir:
     mov cl, OpcionID
     mov ch, 0
     call remove_csv_line
-    call main
+    mov OpcionID, 1d
     call main
     mainEliminar endp
 

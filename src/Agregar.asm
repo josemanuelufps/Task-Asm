@@ -57,8 +57,8 @@ mainAgregar proc near
     ;mov es, ax
 
     ; Apuntar ES a memoria de video
-    mov ax, 0B800h
-    mov es, ax
+    ;mov ax, 0B800h
+    ;mov es, ax
     
     ; Limpiar pantalla
     xor di, di

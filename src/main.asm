@@ -222,6 +222,20 @@ public final_msg3, final_msg4, final_msg5
     main proc near
         mov ax, @data
         mov ds, ax
+        mov ax, 0B800h
+        mov es, ax
+
+        xor di, di
+        mov cx, 80*25
+        mov ah, [colorEliminar]
+        mov al, ' '
+        rep stosw
+
+        mov ah, 02h
+        mov bh, 0
+        mov dh, 2
+        mov dl, 0
+        int 10h
 
         ; ----------------------------------------------------
         ; 1. Open file
@@ -234,7 +248,7 @@ public final_msg3, final_msg4, final_msg5
         ; 2. Read file
         ; Read file with proper bounds checking
         mov bx, [filehandle]
-        mov cx, 4095            ; Read up to buffer size - 1
+        mov cx, 8191            ; Read up to buffer size - 1
         lea dx, fileBuffer
         call read_file
         jc @error
@@ -242,7 +256,7 @@ public final_msg3, final_msg4, final_msg5
         ; Manually null-terminate the buffer
         mov si, dx
         add si, ax              ; AX = bytes read
-        mov byte ptr [si], 0    ; Null-terminate
+        mov byte ptr [si], '$'    ; Null-terminate
 
         ; ----------------------------------------------------
         ; 3. Close file
