@@ -21,6 +21,8 @@
 .stack 100h
 .386
 
+public main
+
 ; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
@@ -54,6 +56,25 @@ public indicacion, salir, agregar
 public listar, eliminar, letra_Welcome
 
 ; ----------------------------------------------------
+; === Public data to Agregar.asm (from main.asm) ===
+; ----------------------------------------------------
+public colorAgregar, msg_add, msg_add2, separador2
+public encabezado2, espacioTarea2, descripcion
+public anio, anioStr, mes, mesStr, dia, diaStr
+public controlesAgregar1, controlesAgregar2
+public controlesAgregar3, controlesAgregar4
+public letra_Agregar
+
+; ----------------------------------------------------
+; === Public data to Agregar.asm (from main.asm) ===
+; ----------------------------------------------------
+public colorEliminar, msg_eliminar, msg_eliminar2
+public msg_vacio, msg_max, msg_max2, max_lines_str
+public controlesEliminar1, controlesEliminar2
+public controlesEliminar3, letra_Eliminar
+public OpcionID, OpcionIDStr
+
+; ----------------------------------------------------
 ; === Public data to Bye.asm (from main.asm) ===
 ; ----------------------------------------------------
 public colorBye, msg_thanks1, msg_thanks2
@@ -64,7 +85,6 @@ public msg_using3, msg_using4, msg_using5, msg_using6
 public msg_using7, msg_using8, msg_me1, msg_me2
 public msg_me3, msg_me4, final_msg1, final_msg2
 public final_msg3, final_msg4, final_msg5
-
 
 ; ----------------------------------------------------
 ; === Data segment ===
@@ -113,6 +133,50 @@ public final_msg3, final_msg4, final_msg5
     eliminar db 'e - Eliminar$'
     letra_Welcome db ' '
 
+    ;DATOS DE AGREGAR.ASM
+    colorAgregar db 03h
+    msg_add     db '          _/_/          _/        _/      _/_/_/_/_/                    _/   ',13, 10
+                db '       _/    _/    _/_/_/    _/_/_/          _/      _/_/_/    _/_/_/  _/  _/',13, 10
+                db '      _/_/_/_/  _/    _/  _/    _/          _/    _/    _/  _/_/      _/_/    ',13, 10
+                db '     _/    _/  _/    _/  _/    _/          _/    _/    _/      _/_/  _/  _/  ',13, 10
+                db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
+    msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
+                db 'Ingrese la fecha de creacion en el formato especifico (YYYY-MM-DD)',13, 10, '$'
+    separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
+    encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
+    espacioTarea2   db '|                             |             |          |          |',13,10,'$'
+    descripcion db 30 dup('$')   
+    anio dw 2025d
+    anioStr db '0000$'
+    mes db 01d
+    mesStr db '00$'
+    dia db 01d
+    diaStr db '00$'
+    controlesAgregar1 db '[A]Aumentar Anio..  [D]Disminuir Anio..  [Q]Cancelar$'
+    controlesAgregar2 db '[A]Aumentar Mes..  [D]Disminuir Mes..  [Q]Cancelar  $'
+    controlesAgregar3 db '[A]Aumentar Dia..  [D]Disminuir Dia..  [Q]Cancelar  $'
+    controlesAgregar4 db '[Enter]Continuar$'
+    letra_Agregar db ' '
+
+    ;DATOS DE ELIMINAR.ASM
+    colorEliminar db 03h
+    msg_eliminar db '                  ____       _      _         _____         _    ',13, 10
+                 db '                 |  _ \  ___| | ___| |_ ___  |_   _|_ _ ___| | __',13, 10
+                 db '                 | | | |/ _ \ |/ _ \ __/ _ \   | |/ _` / __| |/ /',13, 10
+                 db '                 | |_| |  __/ |  __/ ||  __/   | | (_| \__ \   < ',13, 10
+                 db '                 |____/ \___|_|\___|\__\___|   |_|\__,_|___/_|\_\',13, 10, '$'
+    msg_eliminar2 db 'Seleccione el ID de la tarea que dese eliminar...$'
+    msg_vacio db 'No existe ninguna tarea. Empieza creando tareas$'
+    msg_max db 'Seleccion un ID en el rango [1-$'
+    msg_max2 db '] ==> (   )$'
+    max_lines_str db '000$' 
+    controlesEliminar1 db '[S]Siguiente ID..  [A]Anterior ID..  [Q]Cancelar$'
+    controlesEliminar2 db '[Enter]Eliminar$'
+    controlesEliminar3 db '[Enter]Retroceder..$'
+    letra_Eliminar db ' '
+    OpcionID db 1d
+    OpcionIDStr db '000$'
+
     ;DATOS DE BYE.ASM
     colorBye db 03h
     msg_thanks1 db ' _______ _                 _        ','$'
@@ -149,7 +213,7 @@ public final_msg3, final_msg4, final_msg5
 ; === Code segment and main program ===
 ; ----------------------------------------------------
 .code
-    main proc
+    main proc near
         mov ax, @data
         mov ds, ax
 

@@ -10,6 +10,16 @@ public mainWelcome
 extern mainListar:near
 
 ; ----------------------------------------------------
+; === External procedures (from Agregar.asm) ===
+; ----------------------------------------------------
+extern mainAgregar:near
+
+; ----------------------------------------------------
+; === External procedures (from Eliminar.asm) ===
+; ----------------------------------------------------
+extern mainEliminar:near
+
+; ----------------------------------------------------
 ; === External procedures (from Bye.asm) ===
 ; ----------------------------------------------------
 extern mainBye:near
@@ -3077,12 +3087,12 @@ mainWelcome proc near
     jmp Finalizar
 
     OpcionAgregar:
-    ;Llamar a la función para agregar
-    jmp Opcion
+    call mainAgregar
+    jmp Inicio
 
     OpcionEliminar:
-    ;Llamar a la función para eliminar
-    jmp Opcion
+    call mainEliminar
+    jmp Inicio
 
     OpcionListar:
     call mainListar
