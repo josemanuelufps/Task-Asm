@@ -12,7 +12,7 @@ extrn tempBufferAnio:byte, tempBufferMonth:byte, tempBufferday:byte
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
 public parse_csv_line, count_lines, remove_csv_line, get_current_date
-public format_date_creation
+public format_date_creation, store_decimal_in_buffer
 
 .code
 
@@ -191,9 +191,11 @@ public format_date_creation
         
     @parse_fields:
         ; Parse ID (first field)
-        lea di, idBuffer
-        call copy_until_semicolon
-        mov byte ptr [di], '$'
+        push si
+        mov ax, di
+        lea si, idBuffer
+        call store_decimal_in_buffer
+        pop si
         
         ; Parse Description (second field)
         lea di, descriptionBuffer
@@ -277,33 +279,32 @@ public format_date_creation
     ; Clobbers:
     ; ==============================================
     count_lines proc near
-    push si
-    xor cx, cx          ; Contador de líneas = 0
+        push si
+        xor cx, cx          ; Contador de líneas = 0
 
-@count_loop:
-    mov al, [si]
-    inc si
-    cmp al, '$'         ; ¿Fin de archivo?
-    je @end_count
-    cmp al, 10          ; ¿Es LF (salto de línea)?
-    jne @count_loop
-    inc cx              ; Incrementar contador de líneas
-    jmp @count_loop
+    @count_loop:
+        mov al, [si]
+        inc si
+        cmp al, '$'         ; ¿Fin de archivo?
+        je @end_count
+        cmp al, 10          ; ¿Es LF (salto de línea)?
+        jne @count_loop
+        inc cx              ; Incrementar contador de líneas
+        jmp @count_loop
 
-@end_count:
-    mov [max_lines], cl ; Guardar total de líneas
-    pop si
-    ret
-count_lines endp
-
+    @end_count:
+        mov [max_lines], cl ; Guardar total de líneas
+        pop si
+        ret
+    count_lines endp
 
     ; ==============================================
     ; Removes the CX-th data line (1=first record after header) from
     ; the CSV text at DS:SI.  Shifts everything after that line up,
     ; preserving the trailing ‘$’ "sentinel".
     ;
-    ; Input:  SI = pointer to CSV buffer (header + CRLF + data… + '$')
-    ;          CX     = 1-based line index to delete (cannot be zero)
+    ; Input: CX = 1-based line index to delete (cannot be zero)
+    ;
     ; Output: Buffer with that line removed
     ; Clobbers: AX, BX, DX, SI, DI, CX
     ; ==============================================
@@ -314,150 +315,74 @@ count_lines endp
         push dx
 
         lea si, fileBuffer
+
         ; Inicializamos registros
         mov bx, 0             ; Contador de líneas
         ; cx = linea buscada
         lea di, copy_buffer
         jmp @copy_until_line_found
 
-
         ; COPIAR HASTA ENCONTRAR LA LÍNEA
-        ; Recorrer buffer y copiar los caracteres a copy_buffer
+        ; Recorrer buffer y COPIA LOS CARACTEES A copy_buffer
     @copy_until_line_found:
-        cmp bx, cx ; bx cuenta las líneas, cx tiene la línea a eliminar
+        cmp bx, cx
         je @line_found
-        ja @line_not_found
-        
-
         mov al, [si]
-        cmp al, '$' ; mirar fin del archivo
-        je @end_of_file
 
-        cmp al, 10 ; chequear LF (nueva linea, line feed)
-        je @newline_found
-
-    @copy_char:
-        mov [di], al ; dx apunta al copy_buffer y al tiene el char
+        mov [di], al
         inc si
         inc di
-        jmp @copy_until_line_found
 
-    @newline_found:
+        cmp al, '$'
+        je @end_of_file
+        cmp al, 10            ; LF
+        jne @copy_until_line_found
+
         inc bx
-        jmp @copy_char
+        jmp @copy_until_line_found
     
     @end_of_file:
-        mov [di], al
         mov al, 1 ; 1 means error
         jmp @done_rm ; termina el proceso, pues se ingresó alguna línea no válida
         ; tampoco cambia el archivo
 
     ; LÍNEA ENCONTRADA
-    ; ---------------------------------------------------
-    ; Se encontró la línea, significa que ahora empieza la parte intermedia de copiado
     @line_found:
+        cmp bx, [max_lines]
+        je @remove_last_line
 
-        mov al, [si]
-        cmp al, '$'
+    @skip_line:
+        mov al, [si]       ; Leer carácter
+        cmp al, '$'        ; ¿Fin de buffer?
         je @done_rm
-
-        push di ; guarda la posición actual de copy_buffer
-        mov di, offset idBuffer
-    @start_middle_part:
-        ; guarda cada char en id_buffer hasta encontrar ";"
-        mov al, [si]
-        cmp al, ';'
-        je @id_semicolon
-
-        mov [di], al
-        inc si
-        inc di
-        jmp @start_middle_part
-
-    @id_semicolon:
-        mov [di], al
-        inc si
-
-
-    @skip_found_line:
-        mov al, [si]
-
-        cmp al, '$'
-        je @done_rm
-        mov al, [si]
-        cmp al, 10
-        je @second_part
-
-        inc si
-        jmp @skip_found_line
+        inc si             ; AVANZAR siempre
+        cmp al, 10         ; ¿Era LF (10h)? 
+        jne @skip_line     ; Si no, seguimos saltando
+        ; Si era LF, ya avanzamos sobre él y podemos copiar
+        jmp @copy_until_eof
     
-    ;----------------------------------
-    ; now we need to pass the stuff that's inside idBuffer to the modified buffer,
-    ; then pass the id from the original to the buffer, and then traverse both pointers
-    ; until a line feed (new line). Repeat until EOF.
-    @second_part:
-        inc si
-
-        mov al, [si]
-        cmp al, '$'
-        je @done_rm
-
-        pop di ; obtiene la ultima posicion de copy_buffer
-
-
-    @copy_id_to_modified:
-        push si
-        lea si, idBuffer
-    @copy_id_loop:
+    @copy_until_eof:
         mov al, [si]
         mov [di], al
-        inc di
-        inc si
-
         cmp al, '$'
         je @done_rm
 
-        cmp al, ';'
-        jne @copy_id_loop
-
-
-    @collect_original_new_id:
-        pop si
-        push di
-        lea di, idBuffer
-    @copy_loop_new_id:
-        mov al, [si]       ; tomamos char del origen
-        mov [di], al       ; lo guardamos en idBuffer
         inc si
         inc di
+        jmp @copy_until_eof
 
-        cmp al, '$'
-        je @done_rm
+    @remove_last_line:
+        mov byte ptr [di], '$'
+        dec di
+        mov byte ptr [di], '$'
 
-        cmp al, ';'        ; llegamos al final del fragmento?
-        jne @copy_loop_new_id
-        pop di
-
-
-    @copy_until_lf:
-        mov al, [si]       ; leemos de origen
-        mov [di], al        ; escribimos en el copy_buffer
-        inc si
-        inc di
-        cmp al, '$'
-        je @done_rm
-        cmp al, 10        ; es LF??
-        jne @copy_until_lf
-        jmp @copy_id_to_modified
 
     @done_rm:
         call write_file
-
         pop dx
         pop cx
         pop bx
         pop ax
-
         ret
 
     @line_not_found:
@@ -468,6 +393,60 @@ count_lines endp
         ret
 
     remove_csv_line endp
+
+
+    ; ==============================================
+    ;   Converts the value of AX to ASCII decimal.
+    ;   Saves each digit inside the desired buffer and ends with ';'
+    ;
+    ; input:
+    ;   SI = buffer
+    ;   AX = value (0 to 65535)
+    ; output:
+    ;   buffer has the ASCII digits and a ';'
+    ; Clobbers: AX, BX, CX, DX, SI, DI
+    ; ==============================================
+    store_decimal_in_buffer proc near
+        push ax
+        push bx
+        push cx
+        push dx
+        push si
+        push di
+
+        mov cx, 0              ; digit counter
+
+        mov bx, 10             ; divisor decimal
+    @convert_loop:
+        xor dx, dx             
+        div bx                 ; divide AX / BX -> AX=quotient, DX=remainder
+        add dl, '0'            ; to ascii
+        push dx           
+        
+        inc cx                 
+        mov ax, ax
+        cmp ax, 0
+        jne @convert_loop
+
+        ; Ahora CX dígitos empezando en SI+1 hasta SI+CX
+        ; Copiar en orden correcto a idBuffer
+    @copy_loop:
+        pop ax
+        mov byte ptr [si], al
+        inc si
+        loop @copy_loop
+
+        ; Ends with $
+        mov byte ptr [si], '$'
+
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
+    store_decimal_in_buffer endp
 
     ; ==============================================
     ; Writes the content from a buffer (that ends with $)
@@ -496,6 +475,62 @@ count_lines endp
         jc @error_writting
         mov [filehandle], ax
 
+        lea si, fileBuffer
+
+        mov bx, 0          ; contador de saltos de línea encontrados
+        mov di, si         ; DI apunta al lector/escritor dentro de fileBuffer
+
+    .find_loop:
+        mov al, [si]       ; leer un byte
+        cmp al, '$'        ; fin del buffer?
+        je .done           ; si llegamos al '$' sin contar CX líneas, terminamos
+        inc si
+
+        cmp al, 10         ; ¿LF (10)? (suponiendo CR(13) LF(10))
+        jne .find_loop
+
+        ; Encontramos un LF: contamos línea
+        inc bx
+        cmp bx, cx
+        jne .find_loop
+
+        ; Hemos encontrado la CX-ésima línea: 'si' apunta justo después del LF
+        ; Vamos a escribir en DI esta posición:
+        ; - CR (13), LF (10) para terminar la última línea
+        ; - CR, LF para dejar línea vacía
+        ; - '$' terminador
+        ; Opcional: luego podemos llenar de '$' el resto hasta el tamaño original.
+
+        ; Ajustar DI al punto de truncado
+        mov di, si
+
+        ; Escribir CR LF (fin de la línea CX)
+        mov byte ptr [di], 13
+        inc di
+        mov byte ptr [di], 10
+        inc di
+
+        ; Escribir CR LF extra (línea vacía)
+        mov byte ptr [di], 13
+        inc di
+        mov byte ptr [di], 10
+        inc di
+
+        ; Escribir '$' terminador
+        mov byte ptr [di], '$'
+        inc di
+
+        ; Rellenar el resto con '$' (opcional)
+    .fill_dollars:
+        cmp di, si         ; usa aquí tu longitud máxima, por ejemplo fileBuffer+8192
+        ; en este ejemplo solo rellenamos unas cuantas para ilustrar
+        mov byte ptr [di], '$'
+        inc di
+        ; repetir hasta el final deseado...
+        ; cmp di, end_of_buffer 
+        ; jb .fill_dollars
+
+    .done:
         ; Calculate the amount of bytes to write
         lea si, copy_buffer
         xor cx, cx
@@ -519,6 +554,14 @@ count_lines endp
         mov ah, 3Eh
         mov bx, [filehandle]
         int 21h
+
+        ; Reopen file for reading
+        mov ah, 3Dh       
+        mov al, 0           
+        lea dx, filename
+        int 21h
+        jc @error
+        mov [filehandle], ax
 
         ; clear copy_buffer with '$'
         lea di, copy_buffer
@@ -715,6 +758,85 @@ count_lines endp
         pop ax
         ret
     to_string_dia2 endp
+
+    ; ==============================================
+    ; Adds the task to the bottom. 
+    ; In order to call it, you must have to:
+    ; 1) Define the description in descriptionBuffer
+    ; 2) Define the end date in endDate buffer
+    ;
+    ; This method handles the creationDate by itself.
+    ; Clobbers: AX, BX, DX, SI, DI, CX
+    ; ==============================================
+    add_task proc near
+        push ax
+        push bx
+        push cx
+        push dx
+
+        lea si, fileBuffer
+        lea di, copy_buffer
+
+        call get_current_date
+
+    @go_to_eof:
+        mov al, [si]
+        mov [di], al
+        cmp al, '$'
+        je @reached_eof
+
+        inc si
+        inc di
+        jmp @go_to_eof
+
+    @reached_eof:
+        mov byte ptr [di], 13
+        inc di
+        mov byte ptr [di], 10
+        inc di
+        lea si, descriptionBuffer
+
+    @copy_desc:
+        mov al, [si]
+        mov [di], al
+
+        inc si
+        inc di
+
+        cmp al, ';'
+        jne @copy_desc
+        lea si, creationBuffer
+
+    @copy_creation:
+        mov al, [si]
+        mov [di], al
+
+        inc si
+        inc di
+
+        cmp al, ';'
+        jne @copy_creation
+        lea si, endBuffer
+
+    @copy_endBuffer:
+        mov al, [si]
+        cmp al, ';'
+        jne @done_adding
+        mov [di], al
+
+        inc si
+        inc di
+        jmp @copy_endBuffer
+
+
+    @done_adding:
+        mov byte ptr [di], '$'
+        call write_file
+        push dx
+        push cx
+        push bx
+        push ax
+    add_task endp
 
 
 

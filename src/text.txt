@@ -1,101 +1,82 @@
-Id;Description;StartDate;EndDate
-1;Fix bug in code;2025-02-05;2025-03-05
-2;Clean house;2025-04-01;2025-05-10
-3;Attend meeting;2025-05-05;2025-05-06
-4;Study ASM;2025-02-28;2025-03-30
-5;Workout plan;2025-03-01;2025-04-01
-6;Visit dentist;2025-04-15;2025-04-16
-7;Pay bills;2025-01-20;2025-01-25
-8;Organize desk;2025-02-18;2025-03-01
-9;Finish project;2025-03-12;2025-04-30
-10;Prepare slides;2025-02-10;2025-02-20
-11;Backup data;2025-04-05;2025-04-10
-12;Review contracts;2025-03-15;2025-03-20
-13;Buy books;2025-02-03;2025-02-10
-14;Car service;2025-05-01;2025-05-02
-15;Update resume;2025-03-20;2025-03-25
-16;Fix plumbing;2025-04-12;2025-04-15
-17;Grocery shopping;2025-01-28;2025-01-29
-18;Watch tutorial;2025-03-05;2025-03-10
-19;Plan trip;2025-04-20;2025-05-05
-20;Prepare taxes;2025-02-15;2025-04-15
-21;Setup meeting;2025-04-10;2025-04-11
-22;Learn MASM;2025-03-01;2025-03-31
-23;Daily journal;2025-01-01;2025-12-31
-24;Update app;2025-03-25;2025-04-25
-25;Check email;2025-05-10;2025-05-10
-26;Test new feature;2025-04-15;2025-05-15
-27;Organize files;2025-02-14;2025-02-28
-28;Learn new recipe;2025-01-05;2025-01-10
-29;Clean inbox;2025-02-25;2025-03-01
-30;Water plants;2025-01-10;2025-01-11
-31;Visit parents;2025-03-12;2025-03-14
-32;Renew subscription;2025-05-01;2025-05-01
-33;Prepare budget;2025-02-20;2025-03-20
-34;Update software;2025-03-15;2025-03-16
-35;Debug program;2025-04-05;2025-05-05
-36;Volunteer work;2025-01-15;2025-01-20
-37;Call friend;2025-02-12;2025-02-12
-38;Join webinar;2025-03-08;2025-03-08
-39;Test UI design;2025-04-18;2025-05-18
-40;Schedule appointment;2025-01-22;2025-01-23
-41;Update driver;2025-03-03;2025-03-04
-42;Clean garage;2025-04-01;2025-04-03
-43;Apply patch;2025-02-10;2025-02-15
-44;Repair laptop;2025-03-22;2025-04-22
-45;Read book;2025-01-30;2025-02-28
-46;Try new software;2025-04-20;2025-05-20
-47;Inspect car;2025-03-10;2025-03-11
-48;Buy furniture;2025-02-18;2025-03-18
-49;Practice coding;2025-03-05;2025-03-25
-50;Design poster;2025-04-12;2025-05-12
-51;Brainstorm ideas;2025-01-15;2025-01-20
-52;Review logs;2025-02-05;2025-02-15
-53;Clean room;2025-03-01;2025-03-02
-54;Host meeting;2025-04-18;2025-04-18
-55;Generate report;2025-03-15;2025-03-20
-56;Review code;2025-02-28;2025-03-15
-57;Pay rent;2025-01-05;2025-01-06
-58;Test API;2025-03-18;2025-03-25
-59;Download update;2025-02-12;2025-02-13
-60;Prepare pitch;2025-04-01;2025-04-10
-61;Setup backup;2025-03-01;2025-03-02
-62;Review meeting notes;2025-04-10;2025-04-11
-63;Plan weekend;2025-05-05;2025-05-06
-64;Attend training;2025-02-20;2025-02-25
-65;Fix server issue;2025-03-20;2025-04-20
-66;Book hotel;2025-04-15;2025-04-16
-67;Check backups;2025-01-12;2025-01-13
-68;Learn new skill;2025-02-01;2025-02-28
-69;Update documentation;2025-03-25;2025-04-25
-70;Check logs;2025-01-25;2025-01-26
-71;Backup photos;2025-02-05;2025-02-06
-72;Attend webinar;2025-03-10;2025-03-10
-73;Optimize code;2025-04-15;2025-05-15
-74;Fix wiring;2025-05-01;2025-05-05
-75;Edit video;2025-02-12;2025-02-20
-76;Write blog post;2025-03-01;2025-03-05
-77;Run diagnostics;2025-04-10;2025-04-15
-78;Update calendar;2025-01-15;2025-01-16
-79;Research topic;2025-02-20;2025-03-20
-80;Backup emails;2025-03-10;2025-03-11
-81;Setup environment;2025-04-05;2025-04-06
-82;Grocery shopping;2025-01-05;2025-01-06
-83;Organize notes;2025-03-18;2025-03-20
-84;Test software;2025-04-20;2025-05-20
-85;Review book;2025-02-01;2025-02-28
-86;Send invoices;2025-03-15;2025-03-16
-87;Configure router;2025-04-12;2025-04-13
-88;Plan event;2025-05-05;2025-05-10
-89;Fix leak;2025-03-22;2025-03-25
-90;Clean keyboard;2025-01-30;2025-01-31
-91;Attend conference;2025-02-20;2025-02-22
-92;Write letter;2025-04-05;2025-04-06
-93;Review design;2025-03-10;2025-03-15
-94;Organize meeting;2025-05-10;2025-05-11
-95;Replace battery;2025-02-25;2025-02-26
-96;Read article;2025-03-01;2025-03-02
-97;Submit assignment;2025-04-20;2025-04-21
-98;Plan vacation;2025-05-15;2025-05-20
-99;Buy groceries;2025-01-12;2025-02-15
-100;FixThisF*ckingProject;2025-05-23;2025-05-26
+Description;StartDate;EndDate
+Renew passport;2025-02-01;2025-02-10
+Team meeting;2025-03-05;2025-03-05
+Grocery shopping;2025-01-10;2025-01-10
+Submit report;2025-04-08;2025-04-08
+Doctor appointment;2025-02-20;2025-02-20
+Plan vacation;2025-05-01;2025-05-07
+Car maintenance;2025-03-18;2025-03-18
+Buy birthday gift;2025-01-30;2025-01-31
+Complete tax forms;2025-04-01;2025-04-15
+Laundry day;2025-03-10;2025-03-10
+Online course;2025-01-15;2025-03-15
+Read a book;2025-02-01;2025-02-28
+Organize files;2025-01-20;2025-01-22
+Team building activity;2025-03-12;2025-03-13
+Water plants;2025-04-02;2025-04-02
+Call parents;2025-01-25;2025-01-25
+Clean garage;2025-02-28;2025-03-01
+Yoga class;2025-02-05;2025-02-05
+Bake cookies;2025-03-22;2025-03-22
+Submit application;2025-02-10;2025-02-10
+Visit grandma;2025-03-14;2025-03-16
+Paint bedroom;2025-04-10;2025-04-12
+Declutter closet;2025-01-18;2025-01-19
+File insurance claim;2025-02-03;2025-02-07
+Go hiking;2025-04-05;2025-04-05
+Write blog post;2025-01-28;2025-01-28
+Renew library books;2025-02-15;2025-02-15
+Watch documentary;2025-03-09;2025-03-09
+Attend webinar;2025-03-11;2025-03-11
+Join book club;2025-01-17;2025-01-17
+Monthly review;2025-04-01;2025-04-01
+Plan birthday party;2025-02-20;2025-02-25
+Check tire pressure;2025-03-03;2025-03-03
+Vacuum house;2025-01-11;2025-01-11
+Buy groceries;2025-02-08;2025-02-08
+Dentist follow-up;2025-04-20;2025-04-20
+Write resume;2025-03-06;2025-03-07
+Update LinkedIn;2025-01-29;2025-01-29
+Refill prescription;2025-02-22;2025-02-22
+Go to gym;2025-03-20;2025-03-20
+Donate clothes;2025-01-14;2025-01-14
+Return items;2025-02-06;2025-02-06
+Buy concert tickets;2025-03-04;2025-03-04
+Practice guitar;2025-01-31;2025-01-31
+Pet vet visit;2025-04-06;2025-04-06
+Visit museum;2025-02-14;2025-02-14
+Fix leaky faucet;2025-03-16;2025-03-16
+Haircut appointment;2025-01-12;2025-01-12
+Plan wedding;2025-01-05;2025-04-30
+Meal prep;2025-01-07;2025-01-07
+Apply for visa;2025-02-25;2025-03-01
+Research flights;2025-03-21;2025-03-22
+Review budget;2025-04-04;2025-04-04
+Organize desktop;2025-02-11;2025-02-11
+Bike ride;2025-03-17;2025-03-17
+Book hotel;2025-04-14;2025-04-14
+Weekly planning;2025-01-06;2025-01-06
+Fix broken chair;2025-02-13;2025-02-13
+Download eBooks;2025-03-08;2025-03-08
+Sew buttons;2025-01-19;2025-01-19
+Update phone;2025-02-16;2025-02-16
+Send thank-you notes;2025-03-15;2025-03-15
+Write article;2025-04-09;2025-04-09
+Practice coding;2025-01-23;2025-01-23
+Meditate;2025-02-09;2025-02-09
+Learn new recipe;2025-03-23;2025-03-23
+Visit zoo;2025-04-07;2025-04-07
+Take car for wash;2025-01-16;2025-01-16
+Clean fridge;2025-02-12;2025-02-12
+Start savings plan;2025-03-13;2025-03-13
+Change lightbulbs;2025-01-21;2025-01-21
+Check credit report;2025-04-03;2025-04-03
+Watch movie;2025-02-07;2025-02-07
+Register for exam;2025-03-02;2025-03-02
+Prepare presentation;2025-04-11;2025-04-11
+Setup new printer;2025-01-13;2025-01-13
+Meal prep;2025-01-07;2025-01-07
+Apply for visa;2025-02-25;2025-03-01
+Research flights;2025-03-21;2025-03-22
+Review budget;2025-04-04;2025-04-04
+odiar arquitectura;2025-05-24;2100-01-01
