@@ -215,7 +215,8 @@ mainListar proc near
 
     Salir:
     mov [pos_vertical], 3
-    mov [acumuladorLineas], 1d
+    mov [acumuladorLineas], 0d
+    mov [lineas_pintadas], 0
     ret
 
 mainListar endp
