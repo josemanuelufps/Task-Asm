@@ -14,9 +14,9 @@ extrn idBuffer:byte, descriptionBuffer:byte
 extrn creationBuffer:byte, endBuffer:byte, fileBuffer:byte 
 
 ;DATOS DE LISTAR.ASM (ORIGINALMENTE)
-extern colorListar:byte, separador:byte, encabezado:byte, espacioTarea:byte
-extern pos_vertical:byte, cantTareas:byte, letra_Listar:byte, controles:byte
-extern acumuladorLineas:byte, max_lines:byte
+extrn colorListar:byte, separador:byte, encabezado:byte, espacioTarea:byte
+extrn pos_vertical:byte, cantTareas:byte, letra_Listar:byte, controles:byte
+extrn acumuladorLineas:byte, max_lines:byte, lineas_pintadas:byte, lineasPorPagina:byte
 
 public mainListar
 
@@ -32,10 +32,13 @@ public mainListar
     ;acumuladorLineas db 1d
     ;max_lines db 0
 
+    ;lineas_pintadas db 0
+
 .code
 mainListar proc near
     ; Apuntar ES a memoria de video
     Inicio:
+    mov [lineasPorPagina], 10
     call count_lines
     ;mov ax, 0B800h
     ;mov es, ax
@@ -84,11 +87,20 @@ mainListar proc near
     mov ah, 09h
     int 21h
 
+    ;inc [acumuladorLineas]
+
     mov cl, [acumuladorLineas]
     mov ch, 0
 
     ;RELLENAR TABLA
     Rellenar:
+    mov al, [lineas_pintadas]
+    mov ah, 0
+    cmp al, [max_lines]
+    je FinRellenar
+
+    inc cx
+
     mov si, offset fileBuffer
     mov di, cx
     push cx
@@ -139,11 +151,12 @@ mainListar proc near
     mov ah, 09h
     int 21h
 
-    add [pos_vertical], 2
-    inc cx
+    inc [lineas_pintadas]
+    add [pos_vertical], 2   
+    dec [lineasPorPagina]
     cmp [pos_vertical], 23 
     jne Rellenar
-
+    FinRellenar:
     mov [acumuladorLineas], cl
 
     finalizar:
@@ -171,16 +184,33 @@ mainListar proc near
     Next:
     mov [pos_vertical], 3
     mov al, [acumuladorLineas]
+    ;dec al
     cmp al, [max_lines]
-    jge finalizar;Arreglar comparacion y salto
+    je finalizar
 
     jmp Inicio
 
     Down:
     mov [pos_vertical], 3
-    cmp [acumuladorLineas], 11
+    cmp [acumuladorLineas], 10
     jle finalizar
+
+    mov al, [max_lines]
+    cmp al,[lineas_pintadas]
+    jne Seguir
+    
+    mov al, [lineasPorPagina]
+    add [acumuladorLineas], al
     sub [acumuladorLineas], 20
+
+    mov al, [acumuladorLineas]
+    mov [lineas_pintadas], al
+    ;dec [lineasPorPagina]
+    jmp Inicio
+
+    Seguir:
+    sub [acumuladorLineas], 20
+    sub [lineas_pintadas], 20
     jmp Inicio
 
     Salir:

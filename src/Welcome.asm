@@ -7,22 +7,22 @@ public mainWelcome
 ; ----------------------------------------------------
 ; === External procedures (from Listar.asm) ===
 ; ----------------------------------------------------
-extern mainListar:near
+extrn mainListar:near
 
 ; ----------------------------------------------------
 ; === External procedures (from Agregar.asm) ===
 ; ----------------------------------------------------
-extern mainAgregar:near
+extrn mainAgregar:near
 
 ; ----------------------------------------------------
 ; === External procedures (from Eliminar.asm) ===
 ; ----------------------------------------------------
-extern mainEliminar:near
+extrn mainEliminar:near
 
 ; ----------------------------------------------------
 ; === External procedures (from Bye.asm) ===
 ; ----------------------------------------------------
-extern mainBye:near
+extrn mainBye:near
 
 ; ----------------------------------------------------
 ; === External data (from main.asm) ===

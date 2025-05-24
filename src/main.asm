@@ -33,7 +33,7 @@ extrn parse_csv_line:near, count_lines:near
 ; ----------------------------------------------------
 ; === External procedures (from Welcome.asm) ===
 ; ----------------------------------------------------
-extern mainWelcome:near
+extrn mainWelcome:near
 
 ; ----------------------------------------------------
 ; === Public data (from main.asm) ===
@@ -47,7 +47,7 @@ public tempBufferAnio, tempBufferMonth, tempBufferday
 ; ----------------------------------------------------
 public colorListar, separador, encabezado, espacioTarea
 public pos_vertical, cantTareas, letra_Listar, controles
-public acumuladorLineas, max_lines
+public acumuladorLineas, max_lines, lineas_pintadas, lineasPorPagina
 
 ; ----------------------------------------------------
 ; === Public data to Welcome.asm (from main.asm) ===
@@ -122,8 +122,10 @@ public final_msg3, final_msg4, final_msg5
     cantTareas db 10d
     letra_Listar db ' '
     controles db '[U]Siguiente..  [D]Anterior..  [Q]Salir$'
-    acumuladorLineas db 1d
+    acumuladorLineas db 0d
     max_lines db 0
+    lineas_pintadas db 0d
+    lineasPorPagina db 11d
 
     ;DATOS DE WELCOME.ASM
     colorWelcome db 0Fh  ; Fondo negro (0), texto blanco (F)

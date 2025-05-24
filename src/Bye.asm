@@ -6,14 +6,14 @@
 ; === External data (from main.asm) ===
 ; ----------------------------------------------------
 ;DATOS DE BYE.ASM (ORIGINALMENTE)
-extern colorBye:byte, msg_thanks1:byte, msg_thanks2:byte
-extern msg_thanks3:byte, msg_thanks4:byte, msg_thanks5:byte, msg_thanks6:byte
-extern msg_for1:byte, msg_for2:byte, msg_for3:byte, msg_for4:byte
-extern msg_for5:byte, msg_for6:byte, msg_using1:byte, msg_using2:byte
-extern msg_using3:byte, msg_using4:byte, msg_using5:byte, msg_using6:byte
-extern msg_using7:byte, msg_using8:byte, msg_me1:byte, msg_me2:byte
-extern msg_me3:byte, msg_me4:byte, final_msg1:byte, final_msg2:byte
-extern final_msg3:byte, final_msg4:byte, final_msg5:byte
+extrn colorBye:byte, msg_thanks1:byte, msg_thanks2:byte
+extrn msg_thanks3:byte, msg_thanks4:byte, msg_thanks5:byte, msg_thanks6:byte
+extrn msg_for1:byte, msg_for2:byte, msg_for3:byte, msg_for4:byte
+extrn msg_for5:byte, msg_for6:byte, msg_using1:byte, msg_using2:byte
+extrn msg_using3:byte, msg_using4:byte, msg_using5:byte, msg_using6:byte
+extrn msg_using7:byte, msg_using8:byte, msg_me1:byte, msg_me2:byte
+extrn msg_me3:byte, msg_me4:byte, final_msg1:byte, final_msg2:byte
+extrn final_msg3:byte, final_msg4:byte, final_msg5:byte
 
 public mainBye
 

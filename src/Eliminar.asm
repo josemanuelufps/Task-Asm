@@ -12,7 +12,7 @@ extrn main:near
 ; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
-extern count_lines:near, remove_csv_line:near
+extrn count_lines:near, remove_csv_line:near
 
 ; ----------------------------------------------------
 ; === External data (from main.asm) ===
