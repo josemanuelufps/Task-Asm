@@ -277,37 +277,25 @@ public format_date_creation
     ; Clobbers:
     ; ==============================================
     count_lines proc near
-        push si
-        xor cx, cx          ; Contador de líneas = 0
-        mov bx, 0           ; Flag para saltar header (0 = saltar, 1 = contar)
+    push si
+    xor cx, cx          ; Contador de líneas = 0
 
-    @skip_header:
-        mov al, [si]
-        inc si
-        cmp al, 10          ; ¿Encontró LF (fin de header)?
-        je @start_counting
-        cmp al, '$'           ; ¿Fin de archivo inesperado?
-        je @end_count
-        jmp @skip_header
+@count_loop:
+    mov al, [si]
+    inc si
+    cmp al, '$'         ; ¿Fin de archivo?
+    je @end_count
+    cmp al, 10          ; ¿Es LF (salto de línea)?
+    jne @count_loop
+    inc cx              ; Incrementar contador de líneas
+    jmp @count_loop
 
-    @start_counting:
-        mov bx, 1           ; Marcar que header ya se saltó
+@end_count:
+    mov [max_lines], cl ; Guardar total de líneas
+    pop si
+    ret
+count_lines endp
 
-    @count_loop:
-        mov al, [si]
-        inc si
-        cmp al, '$'           ; ¿Fin de archivo?
-        je @end_count
-        cmp al, 10          ; ¿Es LF (salto de línea)?
-        jne @count_loop
-        inc cx              ; Incrementar contador de líneas de datos
-        jmp @count_loop
-
-    @end_count:
-        mov [max_lines], cl ; Guardar total de líneas (sin header)
-        pop si
-        ret
-    count_lines endp
 
     ; ==============================================
     ; Removes the CX-th data line (1=first record after header) from
