@@ -12,7 +12,9 @@
 ; Masm.exe listar.asm ;
 ; Masm.exe welcome.asm ;
 ; Masm.exe bye.asm ;
-; Link.exe main.obj welcome.obj bye.obj listar.obj utils.obj ;
+; Masm.exe agregar.asm ;
+; Masm.exe eliminar.asm ;
+; Link.exe main.obj welcome.obj bye.obj listar.obj utils.obj agregar.obj eliminar.obj ;
 ; main.exe
 
 ; Keep an eye that the "text.txt" file must be in the same directory as the executable.
