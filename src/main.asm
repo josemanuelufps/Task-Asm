@@ -151,7 +151,7 @@ public final_msg3, final_msg4, final_msg5
                 db '     _/    _/  _/    _/  _/    _/          _/    _/    _/      _/_/  _/  _/  ',13, 10
                 db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
     msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
-                db 'Ingrese la fecha de creacion en el formato especifico (YYYY-MM-DD)',13, 10, '$'
+                db 'Ingrese la fecha limite en el formato especifico (YYYY-MM-DD)',13, 10, '$'
     separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
     encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
     espacioTarea2   db '|                             |             |          |          |',13,10,'$'

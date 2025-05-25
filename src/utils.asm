@@ -12,7 +12,7 @@ extrn tempBufferAnio:byte, tempBufferMonth:byte, tempBufferday:byte
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
 public parse_csv_line, count_lines, remove_csv_line, get_current_date
-public format_date_creation, store_decimal_in_buffer
+public format_date_creation, store_decimal_in_buffer, add_task
 
 .code
 
@@ -348,7 +348,7 @@ public format_date_creation, store_decimal_in_buffer
 
     ; LÍNEA ENCONTRADA
     @line_found:
-        cmp bx, [max_lines]
+        cmp bl, [max_lines]
         je @remove_last_line
 
     @skip_line:

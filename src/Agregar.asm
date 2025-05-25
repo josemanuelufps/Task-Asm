@@ -5,13 +5,19 @@
 public mainAgregar
 
 ; ----------------------------------------------------
-; === External procedures (from Bye.asm) ===
+; === External procedures (from main.asm) ===
 ; ----------------------------------------------------
 extrn main:near
 
 ; ----------------------------------------------------
+; === External procedures (from utils.asm) ===
+; ----------------------------------------------------
+extrn add_task:near
+
+; ----------------------------------------------------
 ; === External data (from main.asm) ===
 ; ----------------------------------------------------
+extrn endBuffer:byte, descriptionBuffer:byte
 ;DATOS DE AGREGAR.ASM (ORIGINALMENTE)
 extrn colorAgregar:byte, msg_add:byte, msg_add2:byte
 extrn separador2:byte, encabezado2:byte, espacioTarea2:byte
@@ -30,7 +36,7 @@ extrn letra_Agregar:byte
     ;            db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
 
     ;msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
-    ;            db 'Ingrese la fecha de creacion en el formato especifico (YYYY-MM-DD)',13, 10, '$'
+    ;            db 'Ingrese la fecha limite en el formato especifico (YYYY-MM-DD)',13, 10, '$'
     ;separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
     ;encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
     ;espacioTarea2   db '|                             |             |          |          |',13,10,'$'
@@ -145,6 +151,8 @@ mainAgregar proc near
     fin_descripcion:
     cmp cx , 0
     je DescripcionReturn
+
+    push cx
 
     ; Mostrar controles
     mov ah, 02h
@@ -329,7 +337,27 @@ mainAgregar proc near
     call main
 
     Salir:
-    ;Call agregar de utils
+    pop cx 
+    lea si, descripcion
+    lea di, descriptionBuffer
+    mov bx, cx           ; bx = cantidad de caracteres ingresados
+    mov ah, 0            ; asegurarse de que ah=0
+
+    copy_desc_loop:
+    cmp bx, 0
+    je end_copy_desc
+    mov al, [si]
+    mov [di], al
+    inc si
+    inc di
+    dec bx
+    jmp copy_desc_loop
+
+    end_copy_desc:
+    mov byte ptr [di], '$'
+    
+    call format_date_end
+    call add_task
     call main
 mainAgregar endp
 
@@ -410,5 +438,57 @@ to_string_dia proc near
     pop ax
     ret
 to_string_dia endp
+
+format_date_end proc near
+
+        lea si, endBuffer ; Cambiar por endBuffer
+        lea di, anioStr ; Cambiar por el que se usa en Agregar.asm
+        mov cx, 4
+        @copy_year_buffer:
+            mov al, [di]
+            mov [si], al
+            inc si
+            inc di
+            dec cx
+            cmp cx, 0
+            je @continue_format1
+            jmp @copy_year_buffer
+
+        @continue_format1:
+            mov byte ptr [si], '-'
+            inc si
+
+        mov cx, 2
+        lea di, mesStr ; Cambiar por el que se usa en Agregar.asm
+        @copy_month_buffer:
+            mov al, [di]
+            mov [si], al
+            inc si
+            inc di
+            dec cx
+            cmp cx, 0
+            je @continue_format2
+            jmp @copy_month_buffer
+
+        @continue_format2:
+            mov byte ptr [si], '-'
+            inc si
+
+        mov cx, 2
+        lea di, diaStr ; Cambiar por el que se usa en Agregar.asm
+        @copy_day_buffer:
+            mov al, [di]
+            mov [si], al
+            inc si
+            inc di
+            dec cx
+            cmp cx, 0
+            je @continue_format3
+            jmp @copy_day_buffer
+
+        @continue_format3:
+            ret
+
+    format_date_creation endp
 
 end mainAgregar
