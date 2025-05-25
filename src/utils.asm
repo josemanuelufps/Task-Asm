@@ -6,7 +6,7 @@
 extrn idBuffer:byte, descriptionBuffer:byte
 extrn creationBuffer:byte, endBuffer:byte, max_lines:byte
 extrn copy_buffer:byte, filename:byte, filehandle:word
-extrn fileBuffer:byte
+extrn fileBuffer:byte, descripcion:byte
 extrn tempBufferAnio:byte, tempBufferMonth:byte, tempBufferday:byte
 
 public open_file, close_file, read_file
@@ -768,76 +768,186 @@ public format_date_creation, store_decimal_in_buffer, add_task
     ; This method handles the creationDate by itself.
     ; Clobbers: AX, BX, DX, SI, DI, CX
     ; ==============================================
+    ; ==============================================
+    ; add_task:
+    ;   1) Lee todo el CSV en fileBuffer
+    ;   2) Copia fileBuffer a copy_buffer (incluyendo '$')
+    ;   3) Sustituye el '$' final por CR LF
+    ;   4) Añade descripción;creationDate;endDate$
+    ;   5) Llama a write_full_buffer para reescribir el archivo completo
+    ; Clobbers: AX,BX,CX,DX,SI,DI
+    ; ==============================================
     add_task proc near
         push ax
         push bx
         push cx
         push dx
+        push si
+        push di
 
+        ; —————————————————————————————
+        ; 1) Lee TODO el CSV a fileBuffer
+        ; —————————————————————————————
+        ; Reads file content into buffer
+        ; Input:  BX = file handle
+        ;         CX = max bytes to read
+        ;         DS:DX = buffer address
+        ; Output: AX = bytes read (CF=1 on error)
+        ;         Buffer filled with data + '$' terminator
+        mov bx, [filehandle]
+        lea dx, filename
+        mov cx, 8191
+        call read_file
+
+        ; —————————————————————————————
+        ; 2) Copia fileBuffer → copy_buffer
+        ; —————————————————————————————
         lea si, fileBuffer
         lea di, copy_buffer
-
-        call get_current_date
-
-    @go_to_eof:
+    .copy_old:
         mov al, [si]
         mov [di], al
-        cmp al, '$'
-        je @reached_eof
-
         inc si
         inc di
-        jmp @go_to_eof
+        cmp al, '$'
+        jne .copy_old
 
-    @reached_eof:
+
+        dec di
         mov byte ptr [di], 13
         inc di
         mov byte ptr [di], 10
         inc di
+
+        ; fecha actual para creation_buffer
+        push di
+        call get_current_date 
+
         lea si, descriptionBuffer
+        pop di
 
     @copy_desc:
         mov al, [si]
         mov [di], al
-
         inc si
         inc di
-
-        cmp al, ';'
+        cmp al, '$'
         jne @copy_desc
+        dec di
+        mov byte ptr [di], ';'
+        inc di
+        ;    (c) Copia creationBuffer + ';'
         lea si, creationBuffer
-
-    @copy_creation:
+    .copy_cre:
         mov al, [si]
         mov [di], al
-
         inc si
         inc di
-
-        cmp al, ';'
-        jne @copy_creation
+        cmp al, '$'
+        jne .copy_cre
+        dec di
+        mov byte ptr [di], ';'
+        inc di
+        ;    (d) Copia endBuffer + '$'
         lea si, endBuffer
-
-    @copy_endBuffer:
+    .copy_end:
         mov al, [si]
-        cmp al, ';'
-        jne @done_adding
         mov [di], al
-
         inc si
         inc di
-        jmp @copy_endBuffer
+        cmp al, '$'
+        jne .copy_end
 
+        ; —————————————————————————————
+        ; 5) Reescribe el fichero completo
+        ; —————————————————————————————
+        lea si, copy_buffer
+        call write_full_buffer
 
-    @done_adding:
-        mov byte ptr [di], '$'
-        call write_file
-        push dx
-        push cx
-        push bx
-        push ax
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
     add_task endp
 
 
+    ; ==============================================
+    ; write_full_buffer:
+    ;   Sobrescribe el archivo con lo que haya
+    ;   en copy_buffer (terminado en '$') y recarga
+    ;   fileBuffer para futuras operaciones.
+    ;
+    ; Input:  SI = &copy_buffer
+    ; Clobbers: AX,BX,CX,DX,SI,DI
+    ; ==============================================
+    write_full_buffer proc near
+        push ax
+        push bx
+        push cx
+        push dx
+        push si
+        push di
+
+        ; 1) Cuenta bytes hasta '$'
+        xor cx, cx
+    .count_loop:
+        mov al, [si]
+        cmp al, '$'
+        je .have_len
+        inc cx
+        inc si
+        jmp .count_loop
+
+    .have_len:
+        push cx              ; guardamos longitud en stack
+
+        ; 2) Abre/trunca el fichero
+        mov ah, 3Ch
+        mov cx, 0            ; atributos normales
+        lea dx, filename
+        int 21h
+        jc .exit_no_write
+        mov [filehandle], ax
+
+        ; 3) Recupera longitud para DOS write
+        pop cx               ; CX = número de bytes a escribir
+
+        ; 4) Escribe copy_buffer de una sola vez
+        mov bx, [filehandle]
+        lea dx, copy_buffer
+        mov ah, 40h
+        int 21h
+        jc .exit_no_write
+
+
+        ; 5) Cierra archivo
+        mov ah, 3Eh
+        mov bx, [filehandle]
+        int 21h
+
+        ; 7) Limpia copy_buffer
+        lea di, copy_buffer
+        mov cx, 8192
+        mov al, '$'
+        rep stosb
+
+        mov dl, '!'
+        mov ah, 02h
+        int 21h
+
+        
+
+    .exit_no_write:
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
+    write_full_buffer endp
 
 end ; end of code
