@@ -12,9 +12,7 @@
 ; Masm.exe listar.asm ;
 ; Masm.exe welcome.asm ;
 ; Masm.exe bye.asm ;
-; Masm.exe agregar.asm ;
-; Masm.exe eliminar.asm ;
-; Link.exe main.obj welcome.obj bye.obj listar.obj utils.obj agregar.obj eliminar.obj ;
+; Link.exe main.obj welcome.obj bye.obj listar.obj utils.obj ;
 ; main.exe
 
 ; Keep an eye that the "text.txt" file must be in the same directory as the executable.
@@ -28,9 +26,9 @@ public main
 ; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
-extrn open_file:near, close_file:near, read_file:near
+extrn open_file:near, close_file:near, read_file:near, add_task:near
 extrn print_str:near, print_chr:near, print_number:near, print_newline:near
-extrn parse_csv_line:near, count_lines:near
+extrn parse_csv_line:near, count_lines:near, get_current_date:near
 
 ; ----------------------------------------------------
 ; === External procedures (from Welcome.asm) ===
@@ -101,6 +99,9 @@ public final_msg3, final_msg4, final_msg5
     copy_buffer      db 8192 dup('$')  ; Read buffer
     success_msg db 'File contents:', 13, 10, '$' ; the 13 and 10 are carriage and line feed
     error_msg   db 'Error!', 13, 10, '$'
+    error_msg_op   db 'Error opening!', 13, 10, '$'
+    error_msg_re   db 'Error reading!', 13, 10, '$'
+    error_msg_cl   db 'Error closing!', 13, 10, '$'
     tempBufferAnio db '0000$'
     tempBufferMonth db '00$'
     tempBufferday db '00$'
@@ -108,8 +109,8 @@ public final_msg3, final_msg4, final_msg5
     ; CSV buffers
     idBuffer          db 4 dup('$')        ; 3 digits + null terminator
     descriptionBuffer db 101 dup('$')      ; 100 chars + null
-    creationBuffer    db 11 dup('$')       ; yyyy-mm-dd + null (10+1)
-    endBuffer         db 11 dup('$')       ; Same as creationBuffer
+    creationBuffer    db '2025-02-05$' ;11 dup('$')       ; yyyy-mm-dd + null (10+1)
+    endBuffer         db '2026-02-05$' ;11 dup('$')       ; Same as creationBuffer
     
     ; Temporary line buffer
     lineBuffer  db 256 dup('$')            ; For reading one CSV line
@@ -151,11 +152,11 @@ public final_msg3, final_msg4, final_msg5
                 db '     _/    _/  _/    _/  _/    _/          _/    _/    _/      _/_/  _/  _/  ',13, 10
                 db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
     msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
-                db 'Ingrese la fecha limite en el formato especifico (YYYY-MM-DD)',13, 10, '$'
+                db 'Ingrese la fecha de creacion en el formato especifico (YYYY-MM-DD)',13, 10, '$'
     separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
     encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
     espacioTarea2   db '|                             |             |          |          |',13,10,'$'
-    descripcion db 30 dup('$')   
+    descripcion db 29 dup('$')   
     anio dw 2025d
     anioStr db '0000$'
     mes db 01d
@@ -243,9 +244,12 @@ public final_msg3, final_msg4, final_msg5
 
         ; ----------------------------------------------------
         ; 1. Open file
-        lea dx, filename
+        mov  ax, @data
+        mov  ds, ax
+        lea  dx, filename
+
         call open_file
-        jc @error
+        jc @error_opening
         mov [filehandle], ax
 
         ; ----------------------------------------------------
@@ -255,7 +259,7 @@ public final_msg3, final_msg4, final_msg5
         mov cx, 8191            ; Read up to buffer size - 1
         lea dx, fileBuffer
         call read_file
-        jc @error
+        jc @error_reading
 
         ; Manually null-terminate the buffer
         mov si, dx
@@ -266,7 +270,7 @@ public final_msg3, final_msg4, final_msg5
         ; 3. Close file
         mov bx, [filehandle]
         call close_file
-        jc @error
+        jc @error_closing
 
     ; ----------------------------------------------------
         ; 6. Test CSV parsing
@@ -278,14 +282,31 @@ public final_msg3, final_msg4, final_msg5
 
         call mainWelcome
 
+        ;call get_current_date
+
+        ;call add_task
+
         jmp @finish_program
 
+
+    @error_opening:
+        lea dx, error_msg_op
+        jmp @error    
+    @error_reading:
+        lea dx, error_msg_re
+        jmp @error
+    @error_closing:
+        lea dx, error_msg_cl
+        jmp @error
+    
     @error:
         mov ah, 09h
-        lea dx, error_msg
         int 21h
         mov ax, 4C01h      ; Exit with error code
         int 21h
+        jmp @finish_program
+
+
 
     @finish_program:
         ; Exit (success)
