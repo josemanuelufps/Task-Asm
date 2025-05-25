@@ -439,8 +439,7 @@ to_string_dia proc near
     ret
 to_string_dia endp
 
-format_date_end proc near
-
+    format_date_end proc near
         lea si, endBuffer ; Cambiar por endBuffer
         lea di, anioStr ; Cambiar por el que se usa en Agregar.asm
         mov cx, 4
@@ -488,7 +487,6 @@ format_date_end proc near
 
         @continue_format3:
             ret
-
-    format_date_creation endp
+    format_date_end endp
 
 end mainAgregar
