@@ -29,6 +29,7 @@ public main
 extrn open_file:near, close_file:near, read_file:near, add_task:near
 extrn print_str:near, print_chr:near, print_number:near, print_newline:near
 extrn parse_csv_line:near, count_lines:near, get_current_date:near
+extrn calculate_deadline:near
 
 ; ----------------------------------------------------
 ; === External procedures (from Welcome.asm) ===
@@ -41,7 +42,7 @@ extrn mainWelcome:near
 public idBuffer, descriptionBuffer, creationBuffer, endBuffer
 public filename, filehandle, copy_buffer, fileBuffer
 public tempBufferAnio, tempBufferMonth, tempBufferday
-public currentAnio, currentMes, currentDia
+public currentAnio, currentMes, currentDia, day_diff
 
 ; ----------------------------------------------------
 ; === Public data to Listar.asm (from main.asm) ===
@@ -107,8 +108,9 @@ public final_msg3, final_msg4, final_msg5
     tempBufferMonth db '00$'
     tempBufferday db '00$'
     currentAnio dw 0d
-    currentMes db 0d
-    currentDia db 0d
+    currentMes dw 0d
+    currentDia dw 0d
+    day_diff dw 0
 
     ; CSV buffers
     idBuffer          db 4 dup('$')        ; 3 digits + null terminator
@@ -281,12 +283,19 @@ public final_msg3, final_msg4, final_msg5
         ; 6. Test CSV parsing
         ; Parse line 2 (third line, first data record)
         mov si, offset fileBuffer   ; Pointer to loaded CSV data
-        mov di, 0               ; Line index (0=header, 1=first data)
+        mov di, 82d               ; Line index (0=header, 1=first data)
         call parse_csv_line
         jc @error               ; Handle parsing errors
 
-        call mainWelcome
+        ;call mainWelcome
 
+        call calculate_deadline
+
+        call print_newline
+        call print_newline
+
+        mov ax, -31000
+        call print_number
         ;call get_current_date
 
         ;call add_task
@@ -310,7 +319,6 @@ public final_msg3, final_msg4, final_msg5
         mov ax, 4C01h      ; Exit with error code
         int 21h
         jmp @finish_program
-
 
 
     @finish_program:

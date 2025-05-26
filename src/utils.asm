@@ -8,12 +8,13 @@ extrn creationBuffer:byte, endBuffer:byte, max_lines:byte
 extrn copy_buffer:byte, filename:byte, filehandle:word
 extrn fileBuffer:byte, descripcion:byte
 extrn tempBufferAnio:byte, tempBufferMonth:byte, tempBufferday:byte
-extrn currentAnio:word, currentMes:byte, currentDia:byte
+extrn currentAnio:word, currentMes:word, currentDia:word
+extrn day_diff:word
 
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
 public parse_csv_line, count_lines, remove_csv_line, get_current_date
-public format_date_creation, store_decimal_in_buffer, add_task
+public format_date_creation, store_decimal_in_buffer, add_task, calculate_deadline
 
 .code
 
@@ -972,6 +973,16 @@ public format_date_creation, store_decimal_in_buffer, add_task
         ret
     write_full_buffer endp
 
+
+
+    ; ==============================================
+    ; Calculates the time between endBuffer and the current time
+    ; of the procedure call. Saves the result inside
+    ; "(buffer, idk)"
+    ;
+    ; Input:  SI = &endBuffer
+    ; Clobbers: AX,BX,CX,DX,SI,DI
+    ; ==============================================
     calculate_deadline proc near
         push ax
         push bx
@@ -979,6 +990,125 @@ public format_date_creation, store_decimal_in_buffer, add_task
         push dx
         push si
         push di
+
+        ; Clears the buffers (could have trash values)
+        mov [currentAnio], 0
+        mov [currentMes], 0
+        mov [currentDia], 0
+
+        lea si, endBuffer
+
+        mov cx, 4
+        @push_year:
+            mov ah, 0
+            mov al, [si]
+            sub al, '0'
+            inc si
+            push ax
+        loop @push_year
+
+        inc si
+
+        mov cx, 2
+        @push_month:
+            mov ah, 0
+            mov al, [si]
+            sub al, '0'
+            inc si
+            push ax
+        loop @push_month
+
+        inc si
+
+        mov cx, 2
+        @push_day:
+            mov ah, 0
+            mov al, [si]
+            sub al, '0'
+            inc si
+            push ax
+        loop @push_day
+
+        ; Todos los números se encuentra (en crudo) dentro del stack, y en orden
+        ; de derecha a izq.
+        ; primero los dias, luego meses, y después anios.
+        pop ax
+        add [currentDia], ax 
+
+        pop ax
+        ; voy a probar lo de los shifts, ya que 10x == 8x + 2x
+        mov bx, ax      ; guardar el número original
+        shl ax, 3       ; AX = n * 8
+        mov cx, bx
+        shl cx, 1       ; CX = n * 2
+        add ax, cx      ; AX = n*8 + n*2 = n*10
+
+        add [currentDia], ax
+
+        xor bx, bx
+        xor cx, cx
+
+        ; Dias listos, ahora los meses
+
+        ; Obtener dígitos del mes desde la pila
+        pop bx        ; BX = unidades
+        pop ax        ; AX = decenas
+
+        ; Calcular mes = decenas * 10 + unidades
+        mov cx, ax    ; CX = decenas
+        mov ax, cx
+        mov cx, 10
+        mul cx        ; AX = decenas * 10
+
+        add ax, bx    ; AX = mes (como número completo)
+
+        add [currentMes], ax
+
+        ; Mes listo, ahora el anio
+        ; Pop digits
+        pop bx        ; unidades
+        pop cx        ; decenas
+        pop dx        ; centenas
+        pop ax        ; millares
+
+        ; AX = millares * 1000
+        mov si, 1000
+        mul si        ; AX = millares * 1000
+        push ax       ; guardamos resultado parcial
+
+        ; CX = decenas * 10
+        mov ax, dx    ; AX = centenas
+        mov si, 100
+        mul si        ; AX = centenas * 100
+        push ax
+
+        mov ax, cx    ; AX = decenas
+        mov si, 10
+        mul si        ; AX = decenas * 10
+        push ax
+
+        mov ax, bx    ; unidades
+        push ax       ; AX = unidades
+
+        ; Sumar todos los resultados parciales
+        xor ax, ax
+        pop bx
+        add ax, bx
+        pop bx
+        add ax, bx
+        pop bx
+        add ax, bx
+        pop bx
+        add ax, bx
+        ; AX ahora contiene el año final
+        add [currentAnio], ax
+
+        xor ax, ax
+        xor bx, bx
+        xor cx, cx
+        xor dx, dx
+
+        ; Ahora a restarle la fecha actual
         ; Date stored in 
         ; AL = day of the week (0=Sunday)
         ; CX = year (1980-2099)
@@ -987,104 +1117,45 @@ public format_date_creation, store_decimal_in_buffer, add_task
         mov ah, 2Ah
         int 21h
 
-        mov [currentAnio], cx
-        mov [currentMes], dh
-        mov [currentDia], dl
+        sub [currentAnio], cx
+        sub [currentMes], dh
+        sub [currentDia], dl
 
-        lea si, endBuffer
 
-    ; Copiar año (4 caracteres)
-    lea di, tempBufferAnio
-    mov cx, 4
-    rep movsb
+        ; Ahora a ensamblar esos tres buffers en uno solo (en AX)
+        ; --- Día ---
+        mov ax, [currentDia]    ; AX = currentDia
+        ; resultado parcial va en AX
+        mov [day_diff], ax
 
-    inc si ; saltar '-'
+        ; --- Mes ---
+        mov ax, [currentMes]
+        mov cx, 31
+        imul cx                 ; signed AX * 31 → AX = días del mes
+        add [day_diff], ax    ; sumamos meses 
+        ; day_diff ahora tiene dia + 31*mes
+    
+        ; --- Año ---
+        mov ax, [currentAnio]
+        mov cx, 365
+        imul cx                 ; BX * 365 → resultado firmado en AX
 
-    ; Copiar mes (2 caracteres)
-    lea di, tempBufferMonth
-    mov cx, 2
-    rep movsb
+        ; Ahora sumamos año (AX del año) con day_diff
+        add [day_diff], ax
 
-    inc si ; saltar '-'
+        mov ax, [day_diff]              ; resultado final en AX
 
-    ; Copiar día (2 caracteres)
-    lea di, tempBufferday
-    mov cx, 2
-    rep movsb
+        ; Resultado final: AX con signo correcto
+        ; también está guardado el resultado en [day_diff]
+        call print_number
 
-    ;Ahora pasamos los buffers a decimal
-
-; --- ascii4_to_num ---
-ascii4_to_num:
-    lea si, tempBufferAnio
-    mov cx, 4
-    xor ax, ax
-.next_digit4:
-    mov bl, [si]
-    sub bl, '0'
-    mov dx, 10
-    imul dx         ; AX = AX * 10
-    add ax, bx      ; + dígito
-    inc si
-    loop .next_digit4
-
-ascii2_to_num_month:
-    lea si, tempBufferMonth
-    xor ax, ax
-    mov al, [si]
-    sub al, '0'
-    imul ax, 10     ; AX = decena * 10
-    inc si
-    add al, [si]
-    sub al, '0'
-    mov bl, al      ; BL = mes en decimal
-
-ascii2_to_num_day:
-    lea si, tempBufferday
-    xor ax, ax
-    mov al, [si]
-    sub al, '0'
-    imul ax, 10     ; AX = decena * 10
-    inc si
-    add al, [si]
-    sub al, '0'
-    mov bh, al      ; BH = día en decimal
-
-    ; Calcular diferencias
-    sub ax, [currentAnio]   ; AX = año_fin - año_actual
-    sub bl, [currentMes]    ; BL = mes_fin - mes_actual
-    sub bh, [currentDia]    ; BH = dia_fin - dia_actual
-
-    ; Calcular días totales
-    mov cx, 365
-    imul cx          ; DX:AX = AX * 365 (año_diff)
-    push dx
-    push ax
-
-    mov al, bl       ; month_diff
-    cbw
-    mov cx, 31
-    imul cx          ; AX = month_diff * 31
-    pop bx           ; BX = parte baja de año_diff*365
-    pop dx           ; DX = parte alta de año_diff*365
-    add bx, ax       ; Sumar month_diff*31
-    adc dx, 0
-
-    mov al, bh       ; day_diff
-    cbw
-    add bx, ax       ; Sumar day_diff
-    adc dx, 0
-
-    ; Resultado en DX:BX (32 bits)
-    ; Si se necesita en 16 bits, verificar overflow
-
-    pop di
-    pop si
-    pop dx
-    pop cx
-    pop bx
-    pop ax
-    ret
-calculate_deadline endp
+        pop di
+        pop si
+        pop dx
+        pop cx
+        pop bx
+        pop ax
+        ret
+    calculate_deadline endp
 
 end ; end of code
