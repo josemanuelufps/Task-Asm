@@ -287,15 +287,15 @@ public final_msg3, final_msg4, final_msg5
         call parse_csv_line
         jc @error               ; Handle parsing errors
 
-        ;call mainWelcome
+        call mainWelcome
 
-        call calculate_deadline
+        ;call calculate_deadline
 
-        call print_newline
-        call print_newline
+        ;call print_newline
+        ;call print_newline
 
-        mov ax, -31000
-        call print_number
+        ;mov ax, -31000
+        ;call print_number
         ;call get_current_date
 
         ;call add_task

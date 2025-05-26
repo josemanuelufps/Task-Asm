@@ -1076,12 +1076,13 @@ public format_date_creation, store_decimal_in_buffer, add_task, calculate_deadli
         mul si        ; AX = millares * 1000
         push ax       ; guardamos resultado parcial
 
-        ; CX = decenas * 10
+        ; DX = centenas * 100
         mov ax, dx    ; AX = centenas
         mov si, 100
         mul si        ; AX = centenas * 100
         push ax
 
+        ; CX = decenas * 10
         mov ax, cx    ; AX = decenas
         mov si, 10
         mul si        ; AX = decenas * 10
@@ -1118,8 +1119,11 @@ public format_date_creation, store_decimal_in_buffer, add_task, calculate_deadli
         int 21h
 
         sub [currentAnio], cx
-        sub [currentMes], dh
-        sub [currentDia], dl
+        xor cx, cx
+        mov cl, dh
+        sub [currentMes], cx
+        mov dh, 0
+        sub [currentDia], dx
 
 
         ; Ahora a ensamblar esos tres buffers en uno solo (en AX)
@@ -1147,7 +1151,7 @@ public format_date_creation, store_decimal_in_buffer, add_task, calculate_deadli
 
         ; Resultado final: AX con signo correcto
         ; también está guardado el resultado en [day_diff]
-        call print_number
+        ;call print_number
 
         pop di
         pop si

@@ -5,12 +5,13 @@
 ; ----------------------------------------------------
 ; === External procedures (from utils.asm) ===
 ; ----------------------------------------------------
-extern parse_csv_line:near, count_lines:near
+extrn parse_csv_line:near, count_lines:near, calculate_deadline:near
+extrn print_number:near
 
 ; ----------------------------------------------------
 ; === External data (from main.asm) ===
 ; ----------------------------------------------------
-extrn idBuffer:byte, descriptionBuffer:byte
+extrn idBuffer:byte, descriptionBuffer:byte, day_diff:word
 extrn creationBuffer:byte, endBuffer:byte, fileBuffer:byte 
 
 ;DATOS DE LISTAR.ASM (ORIGINALMENTE)
@@ -150,6 +151,20 @@ mainListar proc near
     lea dx, endBuffer
     mov ah, 09h
     int 21h
+
+    ;Rellenar deadline
+    mov ah, 02h
+    mov bh, 0
+    mov dh, [pos_vertical]   ;Fila
+    mov dl, 65   ;Columna
+    int 10h
+
+    call calculate_deadline
+    push ax
+    mov ax, [day_diff]
+    call print_number
+    pop ax
+
 
     inc [lineas_pintadas]
     add [pos_vertical], 2   
