@@ -283,7 +283,7 @@ public final_msg3, final_msg4, final_msg5
         ; 6. Test CSV parsing
         ; Parse line 2 (third line, first data record)
         mov si, offset fileBuffer   ; Pointer to loaded CSV data
-        mov di, 82d               ; Line index (0=header, 1=first data)
+        mov di, 0d               ; Line index (0=header, 1=first data)
         call parse_csv_line
         jc @error               ; Handle parsing errors
 

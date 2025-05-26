@@ -156,7 +156,7 @@ mainListar proc near
     mov ah, 02h
     mov bh, 0
     mov dh, [pos_vertical]   ;Fila
-    mov dl, 65   ;Columna
+    mov dl, 68   ;Columna
     int 10h
 
     call calculate_deadline
