@@ -8,6 +8,7 @@ extrn creationBuffer:byte, endBuffer:byte, max_lines:byte
 extrn copy_buffer:byte, filename:byte, filehandle:word
 extrn fileBuffer:byte, descripcion:byte
 extrn tempBufferAnio:byte, tempBufferMonth:byte, tempBufferday:byte
+extrn currentAnio:word, currentMes:byte, currentDia:byte
 
 public open_file, close_file, read_file
 public print_str, print_chr, print_number, print_newline
@@ -372,8 +373,29 @@ public format_date_creation, store_decimal_in_buffer, add_task
         jmp @copy_until_eof
 
     @remove_last_line:
-        mov byte ptr [di], '$'
+        ; Si el último carácter en copy_buffer es LF (10), lo borramos
+        lea ax, copy_buffer
+        cmp di, ax          ; ¿estamos al principio?
+        je @just_term
         dec di
+        mov al, [di]
+        cmp al, 10                   ; LF?
+        jne @just_term
+        ; Borramos LF y retrocedemos a CR
+        ; (no hacemos INC di, queremos apuntar justo donde estaba el cr)
+        lea ax, copy_buffer
+        cmp di, ax
+        je @just_term
+        dec di
+        mov al, [di]
+        cmp al, 13                   ; CR?
+        jne @just_term
+        ; Si es CR, retrocedemos antes del CR
+        ; así no queda ni CR ni LF
+        ; di ya apunta al primer byte del final de la línea anterior
+
+    @just_term:
+        ; Colocamos sólo el terminador $
         mov byte ptr [di], '$'
 
 
@@ -949,5 +971,120 @@ public format_date_creation, store_decimal_in_buffer, add_task
         pop ax
         ret
     write_full_buffer endp
+
+    calculate_deadline proc near
+        push ax
+        push bx
+        push cx
+        push dx
+        push si
+        push di
+        ; Date stored in 
+        ; AL = day of the week (0=Sunday)
+        ; CX = year (1980-2099)
+        ; DH = month (1-12)
+        ; DL = day (1-31)
+        mov ah, 2Ah
+        int 21h
+
+        mov [currentAnio], cx
+        mov [currentMes], dh
+        mov [currentDia], dl
+
+        lea si, endBuffer
+
+    ; Copiar año (4 caracteres)
+    lea di, tempBufferAnio
+    mov cx, 4
+    rep movsb
+
+    inc si ; saltar '-'
+
+    ; Copiar mes (2 caracteres)
+    lea di, tempBufferMonth
+    mov cx, 2
+    rep movsb
+
+    inc si ; saltar '-'
+
+    ; Copiar día (2 caracteres)
+    lea di, tempBufferday
+    mov cx, 2
+    rep movsb
+
+    ;Ahora pasamos los buffers a decimal
+
+; --- ascii4_to_num ---
+ascii4_to_num:
+    lea si, tempBufferAnio
+    mov cx, 4
+    xor ax, ax
+.next_digit4:
+    mov bl, [si]
+    sub bl, '0'
+    mov dx, 10
+    imul dx         ; AX = AX * 10
+    add ax, bx      ; + dígito
+    inc si
+    loop .next_digit4
+
+ascii2_to_num_month:
+    lea si, tempBufferMonth
+    xor ax, ax
+    mov al, [si]
+    sub al, '0'
+    imul ax, 10     ; AX = decena * 10
+    inc si
+    add al, [si]
+    sub al, '0'
+    mov bl, al      ; BL = mes en decimal
+
+ascii2_to_num_day:
+    lea si, tempBufferday
+    xor ax, ax
+    mov al, [si]
+    sub al, '0'
+    imul ax, 10     ; AX = decena * 10
+    inc si
+    add al, [si]
+    sub al, '0'
+    mov bh, al      ; BH = día en decimal
+
+    ; Calcular diferencias
+    sub ax, [currentAnio]   ; AX = año_fin - año_actual
+    sub bl, [currentMes]    ; BL = mes_fin - mes_actual
+    sub bh, [currentDia]    ; BH = dia_fin - dia_actual
+
+    ; Calcular días totales
+    mov cx, 365
+    imul cx          ; DX:AX = AX * 365 (año_diff)
+    push dx
+    push ax
+
+    mov al, bl       ; month_diff
+    cbw
+    mov cx, 31
+    imul cx          ; AX = month_diff * 31
+    pop bx           ; BX = parte baja de año_diff*365
+    pop dx           ; DX = parte alta de año_diff*365
+    add bx, ax       ; Sumar month_diff*31
+    adc dx, 0
+
+    mov al, bh       ; day_diff
+    cbw
+    add bx, ax       ; Sumar day_diff
+    adc dx, 0
+
+    ; Resultado en DX:BX (32 bits)
+    ; Si se necesita en 16 bits, verificar overflow
+
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret
+calculate_deadline endp
 
 end ; end of code

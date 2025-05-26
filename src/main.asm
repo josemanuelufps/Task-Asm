@@ -41,6 +41,7 @@ extrn mainWelcome:near
 public idBuffer, descriptionBuffer, creationBuffer, endBuffer
 public filename, filehandle, copy_buffer, fileBuffer
 public tempBufferAnio, tempBufferMonth, tempBufferday
+public currentAnio, currentMes, currentDia
 
 ; ----------------------------------------------------
 ; === Public data to Listar.asm (from main.asm) ===
@@ -105,6 +106,9 @@ public final_msg3, final_msg4, final_msg5
     tempBufferAnio db '0000$'
     tempBufferMonth db '00$'
     tempBufferday db '00$'
+    currentAnio dw 0d
+    currentMes db 0d
+    currentDia db 0d
 
     ; CSV buffers
     idBuffer          db 4 dup('$')        ; 3 digits + null terminator
@@ -152,7 +156,8 @@ public final_msg3, final_msg4, final_msg5
                 db '     _/    _/  _/    _/  _/    _/          _/    _/    _/      _/_/  _/  _/  ',13, 10
                 db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
     msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
-                db 'Ingrese la fecha de creacion en el formato especifico (YYYY-MM-DD)',13, 10, '$'
+                db 'No ingrese teclas especiales, y TAMPOCO intente borrar.(Seran ignorados)',13,10
+                db 'Ingrese la fecha limite en el formato especifico (YYYY-MM-DD)',13, 10, '$'
     separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
     encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
     espacioTarea2   db '|                             |             |          |          |',13,10,'$'

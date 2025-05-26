@@ -36,6 +36,7 @@ extrn letra_Agregar:byte
     ;            db '    _/    _/    _/_/_/    _/_/_/          _/      _/_/_/  _/_/_/    _/    _/ ',13, 10,'$'
 
     ;msg_add2    db 13, 10, 'Ingrese una descripcion de maximo 29 caracteres.',13, 10
+    ;            db 'No ingrese teclas especiales, y TAMPOCO intente borrar.(Seran ignorados)',13,10
     ;            db 'Ingrese la fecha limite en el formato especifico (YYYY-MM-DD)',13, 10, '$'
     ;separador2      db '+-----------------------------+-------------+----------+----------+',13,10,'$'
     ;encabezado2     db '| Descripcion                 | Anio (YYYY) | Mes (MM) | Dia (DD) |',13,10,'$'
@@ -130,7 +131,7 @@ mainAgregar proc near
     DescripcionReturn:
     ; Posicionar cursor para descripción
     mov ah, 02h
-    mov dh, 14
+    mov dh, 15
     mov dl, 1
     int 10h
 
@@ -142,6 +143,15 @@ mainAgregar proc near
     int 21h
     cmp al, 13
     je fin_descripcion
+
+    cmp al, ';'
+    je read_descripcion
+
+    cmp al, '$'
+    je read_descripcion
+
+    cmp al, 8
+    je read_descripcion
 
     mov [si], al
     inc si
@@ -179,7 +189,7 @@ mainAgregar proc near
     call to_string_anio
 
     mov ah, 02h
-    mov dh, 14
+    mov dh, 15
     mov dl, 35
     int 10h
     
@@ -232,7 +242,7 @@ mainAgregar proc near
     call to_string_mes
 
     mov ah, 02h
-    mov dh, 14
+    mov dh, 15
     mov dl, 49
     int 10h
 
@@ -291,7 +301,7 @@ mainAgregar proc near
     call to_string_dia
 
     mov ah, 02h
-    mov dh, 14
+    mov dh, 15
     mov dl, 60
     int 10h
 
